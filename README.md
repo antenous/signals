@@ -4,14 +4,19 @@ A simple [signals and slots](https://en.wikipedia.org/wiki/Signals_and_slots) li
 inspired by [boost::signals2](https://www.boost.org/doc/libs/release/libs/signals2/)
 
 [![pipeline status](https://gitlab.com/antenous/signals/badges/master/pipeline.svg)](https://gitlab.com/antenous/signals/-/commits/master)
+[![coverage report](https://gitlab.com/antenous/signals/badges/master/coverage.svg)](https://gitlab.com/antenous/signals/-/commits/master)
 
 ## Getting started
 
 The following tools are needed to configure and build the project:
-* [CMake](https://cmake.org/) version 3.14 or later
+* [CMake](https://cmake.org/) version 3.15 or later
 * [gcc](https://gcc.gnu.org/) version 5 or later
 * [git](https://git-scm.com/)
 * [Make](https://www.gnu.org/software/make/) or [Ninja](https://ninja-build.org/)
+
+Tools used to measure code coverage:
+* [lcov](http://ltp.sourceforge.net/coverage/lcov.php)
+* [gcovr](https://gcovr.com)
 
 Other tools used in this project:
 * [GoogleTest](https://github.com/google/googletest) (fetched at configure time)
@@ -49,6 +54,21 @@ A more detailed message is shown if any of the tests fail.
 
 > **NOTE!** Unit tests are disabled by defauld when used as a subproject.
 To enable unit tests, configure the project with `SIGNALS_TEST=On`.
+
+### Code coverage
+
+To measure code coverage, configure the project with
+`CODE_COVERAGE=On` and then build the `code-coverage` target.
+
+```sh
+$ cmake -DCODE_COVERAGE=On build/
+$ cmake --build build/ --target check-coverage
+```
+
+This generates a code coverage report in the `build/signals-coverage`
+folder. View `build/signals-coverage/index.html` to see the results.
+
+> **NOTE!** Enabling code coverage forces the build type to be `Debug`
 
 ## License
 

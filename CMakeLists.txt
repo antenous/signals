@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.15)
 project(signals
     VERSION 0.0.1
     DESCRIPTION "A simple signals and slots library"
@@ -19,6 +19,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake)
 
 if(SIGNALS_TEST)
     enable_testing()
+    include(coverage)
     include(googletest)
     include(makecheck)
 endif()
@@ -28,4 +29,5 @@ target_include_directories(signals INTERFACE include)
 
 if(SIGNALS_TEST)
     add_subdirectory(tst EXCLUDE_FROM_ALL)
+    check_coverage(check-coverage EXCLUDES '*googletest*')
 endif()

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.15)
 project(signals
-    VERSION 0.0.1
+    VERSION 0.1.0
     DESCRIPTION "A simple signals and slots library"
     LANGUAGES CXX)
 
@@ -26,9 +26,13 @@ if(SIGNALS_TEST)
 endif()
 
 add_library(signals INTERFACE)
+add_library(signals::signals ALIAS signals)
 target_include_directories(signals INTERFACE include)
 
 if(SIGNALS_TEST)
     add_subdirectory(tst EXCLUDE_FROM_ALL)
-    check_coverage(check-coverage EXCLUDES '*googletest*')
+
+    if(SIGNALS_STANDALONE_PROJECT)
+        check_coverage(check-coverage EXCLUDES '*googletest*')
+    endif()
 endif()

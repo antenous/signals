@@ -51,6 +51,10 @@ $ cmake -DCOLOR_DIAGNOSTICS=On build/
 
 ## Testing
 
+This project is being developed using [Test-driven development (TDD)](https://en.wikipedia.org/wiki/Test-driven_development).
+Tests are written using the [GoogleTest](https://github.com/google/googletest)
+C++ test framework, which is fetched at configure time and built along with the tests.
+
 To run unit tests, build the `check` target.
 
 ```sh

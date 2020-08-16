@@ -1,5 +1,7 @@
 # https://medium.com/@alasher/colored-c-compiler-output-with-ninja-clang-gcc-10bfe7f2b949
 
+cmake_minimum_required(VERSION 3.10)
+include_guard(GLOBAL)
 option(COLOR_DIAGNOSTICS "Force color in diagnostics (GNU/Clang only)." OFF)
 
 if(COLOR_DIAGNOSTICS)

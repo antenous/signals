@@ -4,6 +4,7 @@
 #define SIGNALS_SLOT_HPP_
 
 #include <functional>
+#include "Disconnectable.hpp"
 
 namespace signals
 {
@@ -12,7 +13,7 @@ namespace signals
     class Slot;
 
     template<typename R, typename... Args>
-    class Slot<R(Args...)>
+    class Slot<R(Args...)> : public Disconnectable
     {
     public:
         using Callable = std::function<R(Args...)>;
@@ -21,9 +22,9 @@ namespace signals
 
         Slot(const Slot&) = delete;
 
-        Slot(Slot&&) = default;
+        Slot(Slot&&) = delete;
 
-        ~Slot() = default;
+        ~Slot() override = default;
 
         Slot& operator=(const Slot&) = delete;
 
@@ -31,7 +32,11 @@ namespace signals
 
         R operator()(Args... args) const;
 
+        bool connected() const override;
+
     private:
+        void disconnect() override;
+
         Callable callable;
     };
 
@@ -39,6 +44,18 @@ namespace signals
     Slot<R(Args...)>::Slot(Callable callable) :
         callable(std::move(callable))
     {
+    }
+
+    template<typename R, typename... Args>
+    bool Slot<R(Args...)>::connected() const
+    {
+        return callable != nullptr;
+    }
+
+    template<typename R, typename... Args>
+    void Slot<R(Args...)>::disconnect()
+    {
+        callable = nullptr;
     }
 
     template<typename R, typename... Args>

@@ -10,8 +10,14 @@ namespace
     class SlotTest : public Test
     {
     protected:
+        using Disconnectable = signals::Disconnectable;
         using Slot = signals::Slot<int()>;
     };
+
+    TEST_F(SlotTest, IsDisconnectable)
+    {
+        EXPECT_TRUE((std::is_base_of_v<Disconnectable, Slot>));
+    }
 
     TEST_F(SlotTest, IsNotDefaultConstructible)
     {
@@ -24,9 +30,9 @@ namespace
         EXPECT_FALSE(std::is_copy_assignable_v<Slot>);
     }
 
-    TEST_F(SlotTest, IsNothrowMoveConstructible)
+    TEST_F(SlotTest, IsNonmoveable)
     {
-        EXPECT_TRUE(std::is_nothrow_move_constructible_v<Slot>);
+        EXPECT_FALSE(std::is_move_constructible_v<Slot>);
         EXPECT_FALSE(std::is_move_assignable_v<Slot>);
     }
 

@@ -5,6 +5,7 @@
 
 #include <vector>
 #include "Slot.hpp"
+#include "Connection.hpp"
 
 namespace signals
 {
@@ -34,12 +35,16 @@ namespace signals
 
         bool empty() const;
 
-        void connect(typename Slot::Callable callable);
+        auto connect(typename Slot::Callable callable);
 
         void operator()(Args... args) const;
 
     private:
-        using Slots = std::vector<Slot>;
+        using Slots = std::vector<std::shared_ptr<Slot>>;
+
+        void removeDisconnectedSlots();
+
+        auto immutableSlots() const;
 
         Slots slots;
     };
@@ -60,20 +65,38 @@ namespace signals
     template<typename R, typename... Args>
     bool Signal<R(Args...)>::empty() const
     {
-        return slots.empty();
+        return std::none_of(std::cbegin(slots), std::cend(slots),
+            std::mem_fn(&Slot::connected));
     }
 
     template<typename R, typename... Args>
-    void Signal<R(Args...)>::connect(typename Slot::Callable callable)
+    auto Signal<R(Args...)>::connect(typename Slot::Callable callable)
     {
-        slots.emplace_back(std::move(callable));
+        removeDisconnectedSlots();
+        return Connection{slots.emplace_back(
+            std::make_shared<Slot>(std::move(callable)))};
+    }
+
+    template<typename R, typename... Args>
+    void Signal<R(Args...)>::removeDisconnectedSlots()
+    {
+        slots.erase(
+            std::remove_if(std::begin(slots), std::end(slots),
+                std::not_fn(std::mem_fn(&Slot::connected))), slots.end());
     }
 
     template<typename R, typename... Args>
     void Signal<R(Args...)>::operator()(Args... args) const
     {
-        for (auto & slot : slots)
-            std::invoke(slot, args...);
+        for (auto & slot : immutableSlots())
+            if (slot->connected())
+                std::invoke(*slot, args...);
+    }
+
+    template<typename R, typename... Args>
+    auto Signal<R(Args...)>::immutableSlots() const
+    {
+        return slots;
     }
 
 }

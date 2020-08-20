@@ -1,5 +1,7 @@
 set(test "test-${PROJECT_NAME}")
 add_executable(${test}
+    Connection_test.cpp
+    Disconnectable_test.cpp
     Signal_test.cpp
     Slot_test.cpp)
 target_compile_features(${test} PRIVATE cxx_std_17)

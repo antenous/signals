@@ -32,13 +32,21 @@ $ cmake -S . -B build/
 $ cmake --build build/
 ```
 
-This will create a static library named `libsignals.a` in the `build/src/` folder. 
+This will create a static library named `libsignals.a` in the `build/src/` folder.
 
 The project builds a static library by default. To build a shared library,
 configure the project with `BUILD_SHARED_LIBS=On`.
 
 ```sh
 $ cmake -DBUILD_SHARED_LIBS=On build/
+```
+
+Both `GNU` and `Clang` support colored diagnostics but depending on the build
+environment the colored output may not be enabled by default. To force colored
+diagnostics configure the project with `COLOR_DIAGNOSTICS=On`.
+
+```sh
+$ cmake -DCOLOR_DIAGNOSTICS=On build/
 ```
 
 ## Testing

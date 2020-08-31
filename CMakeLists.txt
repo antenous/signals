@@ -16,6 +16,7 @@ include(CMakeDependentOption)
 cmake_dependent_option(SIGNALS_TEST "Enable tests" OFF "NOT SIGNALS_STANDALONE_PROJECT" ON)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake)
+include(colordiagnostics)
 
 if(SIGNALS_TEST)
     enable_testing()

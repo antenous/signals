@@ -33,6 +33,11 @@ namespace
         EXPECT_TRUE(std::is_nothrow_move_assignable_v<Connection>);
     }
 
+    TEST_F(ConnectionTest, HasVirtualDestructor)
+    {
+        EXPECT_TRUE(std::has_virtual_destructor_v<Connection>);
+    }
+
     TEST_F(ConnectionTest, IsNotConnectedWhenDefaultConstructed)
     {
         EXPECT_FALSE(connection.connected());

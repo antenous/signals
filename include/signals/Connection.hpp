@@ -22,11 +22,11 @@ namespace signals
 
         Connection(Connection&&) = default;
 
+        virtual ~Connection() = default;
+
         Connection& operator=(const Connection&) = default;
 
         Connection& operator=(Connection && other) noexcept;
-
-        ~Connection() = default;
 
         bool connected() const;
 

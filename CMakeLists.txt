@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.15)
 project(signals
-    VERSION 0.2.0
+    VERSION 0.3.0
     DESCRIPTION "A simple signals and slots library"
     LANGUAGES CXX)
 
@@ -26,7 +26,8 @@ if(SIGNALS_TEST)
 endif()
 
 add_library(signals
-    src/Connection.cpp)
+    src/Connection.cpp
+    src/ScopedConnection.cpp)
 add_library(signals::signals ALIAS signals)
 target_compile_features(signals PRIVATE cxx_std_17)
 target_compile_options(signals PRIVATE -Wall -Werror -Wextra -pedantic)

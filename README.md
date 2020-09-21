@@ -75,6 +75,22 @@ find_package(signals REQUIRED)
 target_link_libraries(my-target signals::signals)
 ```
 
+## Packaging
+
+CMake comes with [CPack](https://cmake.org/cmake/help/latest/module/CPack.html),
+a cross-platform software packaging tool that makes it easy to create distributable
+packages. To create a binary package, run the command below.
+
+```sh
+$ cmake --build build --target package
+```
+
+To build a source package, run the command below.
+
+```sh
+$ cmake --build build --target package_source
+```
+
 ## Testing
 
 This project is being developed using [Test-driven development (TDD)](https://en.wikipedia.org/wiki/Test-driven_development).

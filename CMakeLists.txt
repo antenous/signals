@@ -30,6 +30,7 @@ target_include_directories(signals PUBLIC
 
 if(SIGNALS_STANDALONE_PROJECT)
     include(install)
+    include(package)
     include(uninstall)
     target_install(signals)
 endif()

@@ -49,6 +49,32 @@ diagnostics configure the project with `COLOR_DIAGNOSTICS=On`.
 $ cmake -DCOLOR_DIAGNOSTICS=On build/
 ```
 
+## Installing
+
+By default, the `install` target installs the library in the `/usr/local/lib/` folder.
+To change the installation directory, configure the project with `CMAKE_INSTALL_PREFIX`.
+
+```sh
+$ cmake -DCMAKE_INSTALL_PREFIX=build/ -DCMAKE_BUILD_TYPE=Release build/
+$ cmake --build build/ --target install
+```
+
+The above command installs the library in the `build/lib` subdirectory.
+
+> **NOTE!** `install` target may require root permissions and is only available
+with `Release` builds
+
+To uninstall, build the `uninstall` target or run
+`xargs rm < build/install_manifest.txt`.
+
+To use the installed library with `my-target`, add the following lines to the
+`CMakeLists.txt` file.
+
+```cmake
+find_package(signals REQUIRED)
+target_link_libraries(my-target signals::signals)
+```
+
 ## Testing
 
 This project is being developed using [Test-driven development (TDD)](https://en.wikipedia.org/wiki/Test-driven_development).

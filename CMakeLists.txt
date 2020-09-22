@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.15)
 project(signals
-    VERSION 0.4.1
+    VERSION 1.0.0
     DESCRIPTION "A simple signals and slots library"
     LANGUAGES CXX)
 
@@ -18,22 +18,28 @@ cmake_dependent_option(SIGNALS_TEST "Enable tests" OFF "NOT SIGNALS_STANDALONE_P
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake)
 include(colordiagnostics)
 
-if(SIGNALS_TEST)
-    enable_testing()
-    include(coverage)
-    include(googletest)
-    include(makecheck)
-endif()
-
 add_library(signals
     src/Connection.cpp
     src/ScopedConnection.cpp)
 add_library(signals::signals ALIAS signals)
 target_compile_features(signals PRIVATE cxx_std_17)
 target_compile_options(signals PRIVATE -Wall -Werror -Wextra -pedantic)
-target_include_directories(signals PUBLIC include)
+target_include_directories(signals PUBLIC
+    $<BUILD_INTERFACE:${signals_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+
+if(SIGNALS_STANDALONE_PROJECT)
+    include(install)
+    include(uninstall)
+    target_install(signals)
+endif()
 
 if(SIGNALS_TEST)
+    enable_testing()
+    include(coverage)
+    include(googletest)
+    include(makecheck)
+
     add_coverage(signals)
     add_subdirectory(tst EXCLUDE_FROM_ALL)
 

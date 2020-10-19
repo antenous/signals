@@ -5,7 +5,7 @@ include(FetchContent)
 if(CMAKE_TESTING_ENABLED)
     FetchContent_Declare(googletest
         GIT_REPOSITORY https://github.com/google/googletest.git
-        GIT_TAG        955c7f837efad184ec63e771c42542d37545eaef)
+        GIT_TAG        93f08be653c36ddc6943e9513fc14c7292b4d007)
 
     FetchContent_GetProperties(googletest)
 

@@ -22,7 +22,7 @@ namespace
         auto measureSizeofSlot(typename Signal::Slot::Callable callable) const
         {
             const auto bytesBefore = *bytesAllocated;
-            std::make_shared<Signal::Slot>(std::move(callable));
+            auto slot = std::make_shared<Signal::Slot>(std::move(callable));
             return *bytesAllocated - bytesBefore;
         }
 
@@ -81,12 +81,12 @@ namespace
 
     TEST_F(SignalTest, InvokeConnectedSlotsWithArgumentsOnSignal)
     {
-        signals::Signal<void(int&)> signal;
+        signals::Signal<void(int&)> signalWithParameters;
 
         auto i = 1;
-        signal.connect([](int & i){ i *= 2; });
-        signal.connect([](int & i){ i += 3; });
-        signal(i);
+        signalWithParameters.connect([](int & i){ i *= 2; });
+        signalWithParameters.connect([](int & i){ i += 3; });
+        signalWithParameters(i);
 
         EXPECT_EQ(5, i);
     }

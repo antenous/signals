@@ -3,6 +3,7 @@
 #ifndef SIGNALS_SIGNAL_HPP_
 #define SIGNALS_SIGNAL_HPP_
 
+#include <algorithm>
 #include <vector>
 #include "Slot.hpp"
 #include "Connection.hpp"

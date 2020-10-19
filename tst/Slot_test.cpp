@@ -44,7 +44,7 @@ namespace
     TEST_F(SlotTest, ReturnResultOfCallableWhenInvoked)
     {
         const auto result = 42;
-        const auto slot = Slot{[]{ return result; }};
+        const auto slot = Slot{[=]{ return result; }};
         EXPECT_EQ(result, std::invoke(slot));
     }
 }

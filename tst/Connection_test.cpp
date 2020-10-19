@@ -45,13 +45,13 @@ namespace
 
     TEST_F(ConnectionTest, IsConnectedWhenSlotIsConnected)
     {
-        const auto connection = signal.connect([]{}); // LCOV_EXCL_LINE
+        connection = signal.connect([]{}); // LCOV_EXCL_LINE
         EXPECT_TRUE(connection.connected());
     }
 
     TEST_F(ConnectionTest, IsNotConnectedWhenSlotIsDisconnected)
     {
-        auto connection = signal.connect([]{}); // LCOV_EXCL_LINE
+        connection = signal.connect([]{}); // LCOV_EXCL_LINE
         connection.disconnect();
         EXPECT_FALSE(connection.connected());
     }
@@ -80,7 +80,7 @@ namespace
 
     TEST_F(ConnectionTest, IsSafeForSelfMove)
     {
-        auto connection = signal.connect([]{}); // LCOV_EXCL_LINE
+        connection = signal.connect([]{}); // LCOV_EXCL_LINE
         connection = std::move(connection);
         EXPECT_TRUE(connection.connected());
     }

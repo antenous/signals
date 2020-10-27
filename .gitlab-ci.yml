@@ -3,7 +3,7 @@ image: ubuntu:20.04
 before_script:
    - apt-get update -qq &&
      DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends -qq
-     build-essential ca-certificates cmake gcovr git lcov ninja-build
+     build-essential ca-certificates clang cmake gcovr git lcov ninja-build
 
 build:
    stage: build
@@ -14,6 +14,7 @@ build:
 test:
    stage: test
    script:
+   - update-alternatives --set c++ /usr/bin/clang++
    - cmake -S . -B build/ -G Ninja -DCMAKE_BUILD_TYPE=Debug
    - cmake --build build/ --target test-signals
    - ./build/tst/test-signals --gtest_output="xml:report.xml"

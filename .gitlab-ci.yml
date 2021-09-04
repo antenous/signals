@@ -1,0 +1,22 @@
+image: ubuntu:20.04
+
+before_script:
+   - apt-get update -qq &&
+     DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends -qq
+     build-essential ca-certificates cmake git ninja-build
+
+build:
+   stage: build
+   script:
+   - cmake -S . -B build/ -G Ninja -DCMAKE_BUILD_TYPE=Release
+   - cmake --build build/
+
+test:
+   stage: test
+   script:
+   - cmake -S . -B build/ -G Ninja -DCMAKE_BUILD_TYPE=Debug
+   - cmake --build build/ --target test-signals
+   - ./build/tst/test-signals --gtest_output="xml:report.xml"
+   artifacts:
+      reports:
+         junit: report.xml

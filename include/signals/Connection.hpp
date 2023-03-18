@@ -16,7 +16,7 @@ namespace signals
 
         Connection() = default;
 
-        explicit Connection(const Disconnectable & slot);
+        explicit Connection(const Disconnectable & slot) noexcept;
 
         Connection(const Connection&) = default;
 

@@ -13,6 +13,7 @@ namespace
     {
     protected:
         using Signal = signals::Signal<void()>;
+        using SignalWithParams = signals::Signal<void(int&)>;
 
         void SetUp() override
         {
@@ -28,7 +29,46 @@ namespace
 
         std::shared_ptr<std::size_t> bytesAllocated;
         Signal signal;
+        SignalWithParams signalWithParams;
     };
+
+    // LCOV_EXCL_START
+    void noop()
+    {
+    }
+    // LCOV_EXCL_STOP
+
+    auto multiply(int & n, int i)
+    {
+        return [&n, i]
+        {
+            n *= i;
+        };
+    }
+
+    auto multiply(int i)
+    {
+        return [i](int & n)
+        {
+            n *= i;
+        };
+    }
+
+    auto add(int & n, int i)
+    {
+        return [&n, i]
+        {
+            n += i;
+        };
+    }
+
+    auto add(int i)
+    {
+        return [i](int & n)
+        {
+            n += i;
+        };
+    }
 
     TEST_F(SignalTest, IsDefaultConstructible)
     {
@@ -47,88 +87,85 @@ namespace
         EXPECT_TRUE(std::is_nothrow_move_assignable_v<Signal>);
     }
 
-    TEST_F(SignalTest, IsEmptyWhenNoSlotsAreConnected)
+    TEST_F(SignalTest, IsEmptyByDefault)
     {
         EXPECT_TRUE(signal.empty());
     }
 
     TEST_F(SignalTest, IsNotEmptyWhenSlotIsConnected)
     {
-        signal.connect([]{}); // LCOV_EXCL_LINE
+        signal.connect(noop);
         EXPECT_FALSE(signal.empty());
+    }
+
+    TEST_F(SignalTest, IsEmptyWhenSlotsAreDisconnected)
+    {
+        auto connection = signal.connect(noop);
+
+        connection.disconnect();
+
+        EXPECT_TRUE(signal.empty());
     }
 
     TEST_F(SignalTest, IsEmptyWhenSlotsAreCleared)
     {
-        signal.connect([]{}); // LCOV_EXCL_LINE
+        signal.connect(noop);
+
         signal.clear();
+
         EXPECT_TRUE(signal.empty());
     }
 
-    TEST_F(SignalTest, DoNotCrashOnSignalWhenNoSlotsAreConnected)
+    TEST_F(SignalTest, DoNothingOnSignalWhenNoSlotsAreConnected)
     {
         signal();
     }
 
     TEST_F(SignalTest, InvokeConnectedSlotsOnSignal)
     {
-        auto i = 1;
-        signal.connect([&i]{ i *= 2; });
-        signal.connect([&i]{ i += 3; });
+        auto result = 1;
+        signal.connect(multiply(result, 2));
+        signal.connect(add(result, 3));
+
         signal();
-        EXPECT_EQ(5, i);
+
+        EXPECT_EQ(5, result);
     }
 
     TEST_F(SignalTest, InvokeConnectedSlotsWithArgumentsOnSignal)
     {
-        signals::Signal<void(int&)> signalWithParameters;
+        auto result = 1;
+        signalWithParams.connect(multiply(2));
+        signalWithParams.connect(add(3));
 
-        auto i = 1;
-        signalWithParameters.connect([](int & i){ i *= 2; });
-        signalWithParameters.connect([](int & i){ i += 3; });
-        signalWithParameters(i);
+        signalWithParams(result);
 
-        EXPECT_EQ(5, i);
-    }
-
-    TEST_F(SignalTest, IsSafeForSelfMove)
-    {
-        auto i = 1;
-        signal.connect([&i]{ i *= 2; });
-        signal.connect([&i]{ i += 3; });
-        signal = std::move(signal);
-        signal();
-        EXPECT_EQ(5, i);
+        EXPECT_EQ(5, result);
     }
 
     TEST_F(SignalTest, DoNotInvokeDisconnectedSlotOnSignal)
     {
-        auto i = 1;
-        auto connection = signal.connect([&i]{ i *= 2; }); // LCOV_EXCL_LINE
-        signal.connect([&i]{ i += 3; });
-        connection.disconnect();
-        signal();
-        EXPECT_EQ(4, i);
-    }
+        auto result = 1;
+        auto connection = signal.connect(multiply(result, 2));
+        signal.connect(add(result, 3));
 
-    TEST_F(SignalTest, IsEmptyWhenSlotsAreDisconnected)
-    {
-        auto connection = signal.connect([]{}); // LCOV_EXCL_LINE
         connection.disconnect();
-        EXPECT_TRUE(signal.empty());
+
+        signal();
+        EXPECT_EQ(4, result);
     }
 
     TEST_F(SignalTest, DoNotCrashWhenInvokedSlotConnectsNewSlot)
     {
         auto slotInvoked = false;
-        auto connection = signal.connect([this, &slotInvoked]
+        signal.connect([this, &slotInvoked]
         {
             signal.connect([&slotInvoked]
             {
                 slotInvoked = true;
             });
         });
-        signal.connect([]{});
+        signal.connect(noop);
 
         // Having two slots connected before connecting a third one
         // should cause the slots vector to reallocate invalidating
@@ -145,19 +182,31 @@ namespace
 
     TEST_F(SignalTest, RemoveDisconnectedSlotsBeforeConnectingNew)
     {
-        const auto callable = []{}; // LCOV_EXCL_LINE
-        const auto sizeofSlot = measureSizeofSlot(callable);
+        const auto sizeofSlot = measureSizeofSlot(noop);
         ASSERT_NE(0, sizeofSlot);
 
-        auto connection = signal.connect(callable);
-        signal.connect(callable);
+        auto connection = signal.connect(noop);
+        signal.connect(noop);
         connection.disconnect();
 
         // If the disconnected slot is not removed first,
         // the new connection will cause the slots vector to reallocate
         const auto bytesBefore = *bytesAllocated;
-        signal.connect(callable);
+        signal.connect(noop);
         EXPECT_EQ(bytesBefore + sizeofSlot, *bytesAllocated);
+    }
+
+    TEST_F(SignalTest, IsSelfMoveSafe)
+    {
+        auto result = 1;
+        signal.connect(multiply(result, 2));
+        signal.connect(add(result, 3));
+
+        const auto self = &signal;
+        signal = std::move(*self);
+
+        signal();
+        EXPECT_EQ(5, result);
     }
 }
 

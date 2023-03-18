@@ -9,7 +9,7 @@ add_executable(${test}
 target_compile_features(${test} PRIVATE cxx_std_17)
 target_compile_options(${test} PRIVATE
     $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:
-        -Wall -Werror -Wextra -pedantic -Wno-self-move>
+        -Wall -Werror -Wextra -pedantic>
     $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX>)
 target_link_libraries(${test} PRIVATE gtest_main signals)
 add_coverage(${test})

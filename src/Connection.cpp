@@ -4,14 +4,17 @@
 
 using namespace signals;
 
-Connection::Connection(const Disconnectable & slot) :
+Connection::Connection(const Disconnectable & slot) noexcept :
     slot(slot)
 {
 }
 
 Connection& Connection::operator=(Connection && other) noexcept
 {
-    std::swap(slot, other.slot);
+    if (this == &other)
+        return *this;
+
+    slot = std::move(other.slot);
     return *this;
 }
 

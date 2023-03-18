@@ -17,19 +17,19 @@ namespace signals
 
         ScopedConnection(ScopedConnection&&) = default;
 
-        ScopedConnection(const Connection & connection);
+        ScopedConnection(const Connection & connection) noexcept;
 
-        ScopedConnection(Connection && connection);
+        ScopedConnection(Connection && connection) noexcept;
 
         ~ScopedConnection() override;
 
         ScopedConnection& operator=(const ScopedConnection&) = delete;
 
-        ScopedConnection& operator=(ScopedConnection&&) = default;
+        ScopedConnection& operator=(ScopedConnection && other) noexcept;
 
-        ScopedConnection& operator=(const Connection & connection);
+        ScopedConnection& operator=(const Connection & connection) noexcept;
 
-        ScopedConnection& operator=(Connection && connection);
+        ScopedConnection& operator=(Connection && connection) noexcept;
 
         Connection release();
     };

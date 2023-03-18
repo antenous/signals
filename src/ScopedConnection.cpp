@@ -4,12 +4,12 @@
 
 using namespace signals;
 
-ScopedConnection::ScopedConnection(const Connection & connection) :
+ScopedConnection::ScopedConnection(const Connection & connection) noexcept :
     Connection(connection)
 {
 }
 
-ScopedConnection::ScopedConnection(Connection && connection) :
+ScopedConnection::ScopedConnection(Connection && connection) noexcept :
     Connection(std::move(connection))
 {
 }
@@ -19,14 +19,24 @@ ScopedConnection::~ScopedConnection()
     disconnect();
 }
 
-ScopedConnection& ScopedConnection::operator=(const Connection & connection)
+ScopedConnection& ScopedConnection::operator=(ScopedConnection && other) noexcept
+{
+    if (this == &other)
+        return *this;
+
+    disconnect();
+    Connection::operator=(std::move(other));
+    return *this;
+}
+
+ScopedConnection& ScopedConnection::operator=(const Connection & connection) noexcept
 {
     disconnect();
     Connection::operator=(connection);
     return *this;
 }
 
-ScopedConnection& ScopedConnection::operator=(Connection && connection)
+ScopedConnection& ScopedConnection::operator=(Connection && connection) noexcept
 {
     disconnect();
     Connection::operator=(std::move(connection));

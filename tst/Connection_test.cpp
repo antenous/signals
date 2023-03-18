@@ -1,7 +1,6 @@
 // Copyright (c) 2020 Antero Nousiainen
 
 #include <signals/Connection.hpp>
-#include <signals/Signal.hpp>
 #include <gtest/gtest.h>
 
 using namespace signals;
@@ -9,11 +8,27 @@ using namespace testing;
 
 namespace
 {
+    class Slot : public Disconnectable
+    {
+    public:
+        [[nodiscard]] bool connected() const override
+        {
+            return isConnected;
+        }
+
+        void disconnect() override
+        {
+            isConnected = false;
+        }
+
+    private:
+        bool isConnected = true;
+    };
+
     class ConnectionTest : public Test
     {
     protected:
-        Connection connection;
-        Signal<void()> signal;
+        Connection::Disconnectable slot = std::make_shared<Slot>();
     };
 
     TEST_F(ConnectionTest, IsNothrowDefaultConstructible)
@@ -38,50 +53,115 @@ namespace
         EXPECT_TRUE(std::has_virtual_destructor_v<Connection>);
     }
 
-    TEST_F(ConnectionTest, IsNotConnectedWhenDefaultConstructed)
+    TEST_F(ConnectionTest, IsNotConnectedByDefault)
     {
-        EXPECT_FALSE(connection.connected());
+        EXPECT_FALSE(Connection{}.connected());
     }
 
     TEST_F(ConnectionTest, IsConnectedWhenSlotIsConnected)
     {
-        connection = signal.connect([]{}); // LCOV_EXCL_LINE
+        const auto connection = Connection{slot};
+
         EXPECT_TRUE(connection.connected());
+        EXPECT_TRUE(slot->connected());
     }
 
-    TEST_F(ConnectionTest, IsNotConnectedWhenSlotIsDisconnected)
+    TEST_F(ConnectionTest, DisconnectSlotWhenDisconnected)
     {
-        connection = signal.connect([]{}); // LCOV_EXCL_LINE
+        auto connection = Connection{slot};
+
         connection.disconnect();
+
         EXPECT_FALSE(connection.connected());
+        EXPECT_FALSE(slot->connected());
     }
 
-    TEST_F(ConnectionTest, DoNotCrashWhenDisconnectingAlreadyDisconnectedSlot)
+    TEST_F(ConnectionTest, IsDisconnectedWhenSlotIsReset)
     {
+        const auto connection = Connection{slot};
+
+        slot.reset();
+
+        EXPECT_FALSE(connection.connected());
+        EXPECT_FALSE(slot);
+    }
+
+    TEST_F(ConnectionTest, DoNothingWhenResetSlotIsDisconnected)
+    {
+        // Disconnecting an already disconnected connection can lead to a crash if the
+        // status of the slot is not checked before disconnecting it. Hence this test.
+        auto connection = Connection{slot};
+        slot.reset();
+
         connection.disconnect();
     }
 
-    TEST_F(ConnectionTest, DisconnectOriginalWhenCopyIsDisconnected)
+    TEST_F(ConnectionTest, DoNotDisconnectWhenCopied)
     {
-        const auto original = signal.connect([]{}); // LCOV_EXCL_LINE
-        auto copy{original};
-        EXPECT_TRUE(original.connected() && copy.connected());
+        const auto source = Connection{slot};
 
-        copy.disconnect();
-        EXPECT_FALSE(original.connected() && copy.connected());
+        const auto target = source;
+
+        EXPECT_TRUE(source.connected());
+        EXPECT_TRUE(target.connected());
+        EXPECT_TRUE(slot->connected());
     }
 
-    TEST_F(ConnectionTest, DisconnectOriginalWhenMoved)
+    TEST_F(ConnectionTest, DisconnectAllWhenOneCopyIsDisconnected)
     {
-        auto original = signal.connect([]{}); // LCOV_EXCL_LINE
-        const auto copy{std::move(original)};
-        EXPECT_TRUE(!original.connected() && copy.connected());
+        const auto source = Connection{slot};
+        auto target = source;
+
+        target.disconnect();
+
+        EXPECT_FALSE(source.connected());
+        EXPECT_FALSE(target.connected());
+        EXPECT_FALSE(slot->connected());
     }
 
-    TEST_F(ConnectionTest, IsSafeForSelfMove)
+    TEST_F(ConnectionTest, DisconnectSourceWhenMoved)
     {
-        connection = signal.connect([]{}); // LCOV_EXCL_LINE
-        connection = std::move(connection);
+        auto source = Connection{slot};
+
+        const auto target = std::move(source);
+
+        EXPECT_FALSE(source.connected());
+        EXPECT_TRUE(target.connected());
+        EXPECT_TRUE(slot->connected());
+    }
+
+    TEST_F(ConnectionTest, DisconnectSourceWhenMoveAssigned)
+    {
+        auto source = Connection{slot};
+        auto target = Connection{};
+
+        target = std::move(source);
+
+        EXPECT_FALSE(source.connected());
+        EXPECT_TRUE(target.connected());
+        EXPECT_TRUE(slot->connected());
+    }
+
+    TEST_F(ConnectionTest, DoNotDisconnectTargetSlotIsWhenMoveAssigned)
+    {
+        auto source = Connection{};
+        auto target = Connection{slot};
+
+        target = std::move(source);
+
+        EXPECT_FALSE(source.connected());
+        EXPECT_FALSE(target.connected());
+        EXPECT_TRUE(slot->connected());
+    }
+
+    TEST_F(ConnectionTest, IsSelfMoveSafe)
+    {
+        auto connection = Connection{slot};
+        const auto self = &connection;
+
+        connection = std::move(*self);
+
         EXPECT_TRUE(connection.connected());
+        EXPECT_TRUE(slot->connected());
     }
 }

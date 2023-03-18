@@ -36,6 +36,8 @@ public:
 
     bool empty() const;
 
+    auto num_slots() const;
+
     auto connect(typename Slot::Callable callable);
 
     void operator()(Args... args) const;
@@ -70,6 +72,12 @@ template<typename R, typename... Args>
 bool Signal<R(Args...)>::empty() const
 {
     return std::none_of(std::cbegin(slots), std::cend(slots), std::mem_fn(&Slot::connected));
+}
+
+template<typename R, typename... Args>
+auto Signal<R(Args...)>::num_slots() const
+{
+    return std::count_if(std::cbegin(slots), std::cend(slots), std::mem_fn(&Slot::connected));
 }
 
 template<typename R, typename... Args>

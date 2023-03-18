@@ -86,12 +86,14 @@ TEST_F(SignalTest, IsNothrowMoveable)
 TEST_F(SignalTest, IsEmptyByDefault)
 {
     EXPECT_TRUE(signal.empty());
+    EXPECT_EQ(0, signal.num_slots());
 }
 
 TEST_F(SignalTest, IsNotEmptyWhenSlotIsConnected)
 {
     signal.connect(noop);
     EXPECT_FALSE(signal.empty());
+    EXPECT_EQ(1, signal.num_slots());
 }
 
 TEST_F(SignalTest, IsEmptyWhenSlotsAreDisconnected)
@@ -101,6 +103,7 @@ TEST_F(SignalTest, IsEmptyWhenSlotsAreDisconnected)
     connection.disconnect();
 
     EXPECT_TRUE(signal.empty());
+    EXPECT_EQ(0, signal.num_slots());
 }
 
 TEST_F(SignalTest, IsEmptyWhenSlotsAreCleared)
@@ -110,6 +113,7 @@ TEST_F(SignalTest, IsEmptyWhenSlotsAreCleared)
     signal.clear();
 
     EXPECT_TRUE(signal.empty());
+    EXPECT_EQ(0, signal.num_slots());
 }
 
 TEST_F(SignalTest, DoNothingOnSignalWhenNoSlotsAreConnected)

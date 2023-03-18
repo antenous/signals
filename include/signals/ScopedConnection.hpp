@@ -21,7 +21,7 @@ namespace signals
 
         ScopedConnection(Connection && connection) noexcept;
 
-        ~ScopedConnection() override;
+        ~ScopedConnection();
 
         ScopedConnection& operator=(const ScopedConnection&) = delete;
 

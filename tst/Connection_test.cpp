@@ -48,9 +48,10 @@ namespace
         EXPECT_TRUE(std::is_nothrow_move_assignable_v<Connection>);
     }
 
-    TEST_F(ConnectionTest, HasVirtualDestructor)
+    TEST_F(ConnectionTest, IsNotPolymorphic)
     {
-        EXPECT_TRUE(std::has_virtual_destructor_v<Connection>);
+        EXPECT_FALSE(std::is_polymorphic_v<Connection>);
+        EXPECT_FALSE(std::has_virtual_destructor_v<Connection>);
     }
 
     TEST_F(ConnectionTest, IsNotConnectedByDefault)

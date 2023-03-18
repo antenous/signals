@@ -22,7 +22,7 @@ namespace signals
 
         Connection(Connection&&) = default;
 
-        virtual ~Connection() = default;
+        ~Connection() = default;
 
         Connection& operator=(const Connection&) = default;
 

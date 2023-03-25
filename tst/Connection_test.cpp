@@ -3,11 +3,12 @@
 #include <signals/Connection.hpp>
 #include <gtest/gtest.h>
 
-using namespace signals;
-using namespace testing;
-
+namespace signals
+{
 namespace
 {
+    using namespace testing;
+
     class Slot : public Disconnectable
     {
     public:
@@ -165,4 +166,5 @@ namespace
         EXPECT_TRUE(connection.connected());
         EXPECT_TRUE(slot->connected());
     }
-}
+} // namespace
+} // namespace signals

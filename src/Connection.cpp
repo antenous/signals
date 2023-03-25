@@ -2,14 +2,15 @@
 
 #include "signals/Connection.hpp"
 
-using namespace signals;
+namespace signals
+{
 
-Connection::Connection(const Disconnectable & slot) noexcept :
+Connection::Connection(const Disconnectable& slot) noexcept :
     slot(slot)
 {
 }
 
-Connection& Connection::operator=(Connection && other) noexcept
+Connection& Connection::operator=(Connection&& other) noexcept
 {
     if (this == &other)
         return *this;
@@ -29,3 +30,5 @@ void Connection::disconnect()
     if (auto s = slot.lock(); s)
         s->disconnect();
 }
+
+} // namespace signals

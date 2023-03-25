@@ -4,31 +4,31 @@
 #include <signals/ScopedConnection.hpp>
 #include <gtest/gtest.h>
 
-using namespace testing;
-
 namespace
 {
-    struct TestEvent : signals::Event<TestEvent, void(int)>
-    {
-    };
+using namespace testing;
 
-    class EventTest : public Test
-    {
-    protected:
-        TestEvent event;
-    };
+struct TestEvent : signals::Event<TestEvent, void(int)>
+{
+};
 
-    TEST_F(EventTest, InvokeSubscriberOnEvent)
-    {
-        auto subscriberInvoked = false;
+class EventTest : public Test
+{
+protected:
+    TestEvent event;
+};
 
-        signals::ScopedConnection scopedSubscription = TestEvent::subscribe(
-            [&subscriberInvoked](int answer)
-            {
-                subscriberInvoked = (answer == 42);
-            });
+TEST_F(EventTest, InvokeSubscriberOnEvent)
+{
+    auto subscriberInvoked = false;
 
-        event(42);
-        EXPECT_TRUE(subscriberInvoked);
-    }
+    signals::ScopedConnection scopedSubscription = TestEvent::subscribe(
+        [&subscriberInvoked](int answer)
+        {
+            subscriberInvoked = (answer == 42);
+        });
+
+    event(42);
+    EXPECT_TRUE(subscriberInvoked);
 }
+} // namespace

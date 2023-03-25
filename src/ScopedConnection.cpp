@@ -2,14 +2,15 @@
 
 #include "signals/ScopedConnection.hpp"
 
-using namespace signals;
+namespace signals
+{
 
-ScopedConnection::ScopedConnection(const Connection & connection) noexcept :
+ScopedConnection::ScopedConnection(const Connection& connection) noexcept :
     Connection(connection)
 {
 }
 
-ScopedConnection::ScopedConnection(Connection && connection) noexcept :
+ScopedConnection::ScopedConnection(Connection&& connection) noexcept :
     Connection(std::move(connection))
 {
 }
@@ -19,7 +20,7 @@ ScopedConnection::~ScopedConnection()
     disconnect();
 }
 
-ScopedConnection& ScopedConnection::operator=(ScopedConnection && other) noexcept
+ScopedConnection& ScopedConnection::operator=(ScopedConnection&& other) noexcept
 {
     if (this == &other)
         return *this;
@@ -29,14 +30,14 @@ ScopedConnection& ScopedConnection::operator=(ScopedConnection && other) noexcep
     return *this;
 }
 
-ScopedConnection& ScopedConnection::operator=(const Connection & connection) noexcept
+ScopedConnection& ScopedConnection::operator=(const Connection& connection) noexcept
 {
     disconnect();
     Connection::operator=(connection);
     return *this;
 }
 
-ScopedConnection& ScopedConnection::operator=(Connection && connection) noexcept
+ScopedConnection& ScopedConnection::operator=(Connection&& connection) noexcept
 {
     disconnect();
     Connection::operator=(std::move(connection));
@@ -47,3 +48,5 @@ Connection ScopedConnection::release()
 {
     return std::move(*this);
 }
+
+} // namespace signals

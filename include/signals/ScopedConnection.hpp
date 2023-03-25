@@ -8,32 +8,32 @@
 namespace signals
 {
 
-    class ScopedConnection : public Connection
-    {
-    public:
-        ScopedConnection() = default;
+class ScopedConnection : public Connection
+{
+public:
+    ScopedConnection() = default;
 
-        ScopedConnection(const ScopedConnection&) = delete;
+    ScopedConnection(const ScopedConnection&) = delete;
 
-        ScopedConnection(ScopedConnection&&) = default;
+    ScopedConnection(ScopedConnection&&) = default;
 
-        ScopedConnection(const Connection & connection) noexcept;
+    ScopedConnection(const Connection& connection) noexcept;
 
-        ScopedConnection(Connection && connection) noexcept;
+    ScopedConnection(Connection&& connection) noexcept;
 
-        ~ScopedConnection();
+    ~ScopedConnection();
 
-        ScopedConnection& operator=(const ScopedConnection&) = delete;
+    ScopedConnection& operator=(const ScopedConnection&) = delete;
 
-        ScopedConnection& operator=(ScopedConnection && other) noexcept;
+    ScopedConnection& operator=(ScopedConnection&& other) noexcept;
 
-        ScopedConnection& operator=(const Connection & connection) noexcept;
+    ScopedConnection& operator=(const Connection& connection) noexcept;
 
-        ScopedConnection& operator=(Connection && connection) noexcept;
+    ScopedConnection& operator=(Connection&& connection) noexcept;
 
-        Connection release();
-    };
+    Connection release();
+};
 
-}
+} // namespace signals
 
 #endif

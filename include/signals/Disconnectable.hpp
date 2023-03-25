@@ -6,16 +6,16 @@
 namespace signals
 {
 
-    class Disconnectable
-    {
-    public:
-        virtual ~Disconnectable() = default;
+class Disconnectable
+{
+public:
+    virtual ~Disconnectable() = default;
 
-        virtual bool connected() const = 0;
+    virtual bool connected() const = 0;
 
-        virtual void disconnect() = 0;
-    };
+    virtual void disconnect() = 0;
+};
 
-}
+} // namespace signals
 
 #endif

@@ -3,11 +3,12 @@
 #include <signals/ScopedConnection.hpp>
 #include <gtest/gtest.h>
 
-using namespace signals;
-using namespace testing;
-
+namespace signals
+{
 namespace
 {
+    using namespace testing;
+
     class Slot : public Disconnectable
     {
     public:
@@ -195,4 +196,5 @@ namespace
 
         EXPECT_TRUE(scopedConnection.connected());
     }
-}
+} // namespace
+} // namespace signals

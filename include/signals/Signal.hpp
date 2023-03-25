@@ -11,98 +11,97 @@
 namespace signals
 {
 
-    template<typename>
-    class Signal;
+template<typename>
+class Signal;
 
-    template<typename R, typename... Args>
-    class Signal<R(Args...)>
-    {
-    public:
-        using Slot = signals::Slot<R(Args...)>;
+template<typename R, typename... Args>
+class Signal<R(Args...)>
+{
+public:
+    using Slot = signals::Slot<R(Args...)>;
 
-        Signal() = default;
+    Signal() = default;
 
-        Signal(const Signal&) = delete;
+    Signal(const Signal&) = delete;
 
-        Signal(Signal&&) = default;
+    Signal(Signal&&) = default;
 
-        ~Signal() = default;
+    ~Signal() = default;
 
-        Signal& operator=(const Signal&) = delete;
+    Signal& operator=(const Signal&) = delete;
 
-        Signal& operator=(Signal && other) noexcept;
+    Signal& operator=(Signal&& other) noexcept;
 
-        void clear();
+    void clear();
 
-        bool empty() const;
+    bool empty() const;
 
-        auto connect(typename Slot::Callable callable);
+    auto connect(typename Slot::Callable callable);
 
-        void operator()(Args... args) const;
+    void operator()(Args... args) const;
 
-    private:
-        using Slots = std::vector<std::shared_ptr<Slot>>;
+private:
+    using Slots = std::vector<std::shared_ptr<Slot>>;
 
-        void removeDisconnectedSlots();
+    void removeDisconnectedSlots();
 
-        auto immutableSlots() const;
+    auto immutableSlots() const;
 
-        Slots slots;
-    };
+    Slots slots;
+};
 
-    template<typename R, typename... Args>
-    Signal<R(Args...)>& Signal<R(Args...)>::operator=(Signal && other) noexcept
-    {
-        if (this == &other)
-            return *this;
-
-        slots = std::move(other.slots);
+template<typename R, typename... Args>
+Signal<R(Args...)>& Signal<R(Args...)>::operator=(Signal&& other) noexcept
+{
+    if (this == &other)
         return *this;
-    }
 
-    template<typename R, typename... Args>
-    void Signal<R(Args...)>::clear()
-    {
-        slots.clear();
-    }
-
-    template<typename R, typename... Args>
-    bool Signal<R(Args...)>::empty() const
-    {
-        return std::none_of(std::cbegin(slots), std::cend(slots),
-            std::mem_fn(&Slot::connected));
-    }
-
-    template<typename R, typename... Args>
-    auto Signal<R(Args...)>::connect(typename Slot::Callable callable)
-    {
-        removeDisconnectedSlots();
-        return Connection{slots.emplace_back(
-            std::make_shared<Slot>(std::move(callable)))};
-    }
-
-    template<typename R, typename... Args>
-    void Signal<R(Args...)>::removeDisconnectedSlots()
-    {
-        slots.erase(
-            std::remove_if(std::begin(slots), std::end(slots),
-                std::not_fn(std::mem_fn(&Slot::connected))), slots.end());
-    }
-
-    template<typename R, typename... Args>
-    void Signal<R(Args...)>::operator()(Args... args) const
-    {
-        for (auto & slot : immutableSlots())
-            if (slot->connected())
-                std::invoke(*slot, args...);
-    }
-
-    template<typename R, typename... Args>
-    auto Signal<R(Args...)>::immutableSlots() const
-    {
-        return slots;
-    }
-
+    slots = std::move(other.slots);
+    return *this;
 }
+
+template<typename R, typename... Args>
+void Signal<R(Args...)>::clear()
+{
+    slots.clear();
+}
+
+template<typename R, typename... Args>
+bool Signal<R(Args...)>::empty() const
+{
+    return std::none_of(std::cbegin(slots), std::cend(slots), std::mem_fn(&Slot::connected));
+}
+
+template<typename R, typename... Args>
+auto Signal<R(Args...)>::connect(typename Slot::Callable callable)
+{
+    removeDisconnectedSlots();
+    return Connection{slots.emplace_back(std::make_shared<Slot>(std::move(callable)))};
+}
+
+template<typename R, typename... Args>
+void Signal<R(Args...)>::removeDisconnectedSlots()
+{
+    slots.erase(
+        std::remove_if(
+            std::begin(slots), std::end(slots), std::not_fn(std::mem_fn(&Slot::connected))),
+        slots.end());
+}
+
+template<typename R, typename... Args>
+void Signal<R(Args...)>::operator()(Args... args) const
+{
+    for (auto& slot : immutableSlots())
+        if (slot->connected())
+            std::invoke(*slot, args...);
+}
+
+template<typename R, typename... Args>
+auto Signal<R(Args...)>::immutableSlots() const
+{
+    return slots;
+}
+
+} // namespace signals
 
 #endif

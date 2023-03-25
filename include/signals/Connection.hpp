@@ -3,39 +3,39 @@
 #ifndef SIGNALS_CONNECTION_HPP_
 #define SIGNALS_CONNECTION_HPP_
 
-#include <memory>
 #include "Disconnectable.hpp"
+#include <memory>
 
 namespace signals
 {
 
-    class Connection
-    {
-    public:
-        using Disconnectable = std::shared_ptr<signals::Disconnectable>;
+class Connection
+{
+public:
+    using Disconnectable = std::shared_ptr<signals::Disconnectable>;
 
-        Connection() = default;
+    Connection() = default;
 
-        explicit Connection(const Disconnectable & slot) noexcept;
+    explicit Connection(const Disconnectable& slot) noexcept;
 
-        Connection(const Connection&) = default;
+    Connection(const Connection&) = default;
 
-        Connection(Connection&&) = default;
+    Connection(Connection&&) = default;
 
-        ~Connection() = default;
+    ~Connection() = default;
 
-        Connection& operator=(const Connection&) = default;
+    Connection& operator=(const Connection&) = default;
 
-        Connection& operator=(Connection && other) noexcept;
+    Connection& operator=(Connection&& other) noexcept;
 
-        bool connected() const;
+    bool connected() const;
 
-        void disconnect();
+    void disconnect();
 
-    private:
-        Disconnectable::weak_type slot;
-    };
+private:
+    Disconnectable::weak_type slot;
+};
 
-}
+} // namespace signals
 
 #endif

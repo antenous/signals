@@ -196,6 +196,34 @@ namespace
         EXPECT_EQ(bytesBefore + sizeofSlot, *bytesAllocated);
     }
 
+    TEST_F(SignalTest, ClearSourceWhenMoved)
+    {
+        auto source = Signal{};
+        const auto connection = source.connect(noop);
+
+        const auto target = std::move(source);
+
+        EXPECT_TRUE(source.empty());
+        EXPECT_TRUE(connection.connected());
+        EXPECT_FALSE(target.empty());
+    }
+
+    TEST_F(SignalTest, ClearSourceWhenMoveAssigned)
+    {
+        auto source = Signal{};
+        const auto sourceConnection = source.connect(noop);
+
+        auto target = Signal{};
+        const auto targetConnection = target.connect(noop);
+
+        target = std::move(source);
+
+        EXPECT_TRUE(source.empty());
+        EXPECT_TRUE(sourceConnection.connected());
+        EXPECT_FALSE(target.empty());
+        EXPECT_FALSE(targetConnection.connected());
+    }
+
     TEST_F(SignalTest, IsSelfMoveSafe)
     {
         auto result = 1;
@@ -206,6 +234,7 @@ namespace
         signal = std::move(*self);
 
         signal();
+        EXPECT_FALSE(signal.empty());
         EXPECT_EQ(5, result);
     }
 }

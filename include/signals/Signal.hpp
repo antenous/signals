@@ -53,7 +53,10 @@ namespace signals
     template<typename R, typename... Args>
     Signal<R(Args...)>& Signal<R(Args...)>::operator=(Signal && other) noexcept
     {
-        std::swap(slots, other.slots);
+        if (this == &other)
+            return *this;
+
+        slots = std::move(other.slots);
         return *this;
     }
 

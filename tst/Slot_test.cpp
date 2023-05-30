@@ -44,8 +44,7 @@ TEST_F(SlotTest, CallableTypeIsStdFunction)
 TEST_F(SlotTest, ReturnResultOfCallableWhenInvoked)
 {
     const auto result = 42;
-    const auto fn = [=]
-    {
+    const auto fn = [=] {
         return result;
     };
     const auto slot = Slot{fn};

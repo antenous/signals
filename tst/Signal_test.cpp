@@ -40,32 +40,28 @@ void noop()
 
 auto multiply(int& n, int i)
 {
-    return [&n, i]
-    {
+    return [&n, i] {
         n *= i;
     };
 }
 
 auto multiply(int i)
 {
-    return [i](int& n)
-    {
+    return [i](int& n) {
         n *= i;
     };
 }
 
 auto add(int& n, int i)
 {
-    return [&n, i]
-    {
+    return [&n, i] {
         n += i;
     };
 }
 
 auto add(int i)
 {
-    return [i](int& n)
-    {
+    return [i](int& n) {
         n += i;
     };
 }

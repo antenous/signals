@@ -22,9 +22,8 @@ TEST_F(EventTest, InvokeSubscriberOnEvent)
 {
     auto subscriberInvoked = false;
 
-    signals::ScopedConnection scopedSubscription = TestEvent::subscribe(
-        [&subscriberInvoked](int answer)
-        {
+    signals::ScopedConnection scopedSubscription =
+        TestEvent::subscribe([&subscriberInvoked](int answer) {
             subscriberInvoked = (answer == 42);
         });
 

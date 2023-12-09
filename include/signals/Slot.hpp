@@ -3,8 +3,8 @@
 #ifndef SIGNALS_SLOT_HPP_
 #define SIGNALS_SLOT_HPP_
 
-#include <functional>
 #include "Disconnectable.hpp"
+#include <functional>
 
 namespace signals
 {
@@ -34,7 +34,7 @@ public:
 
     R operator()(Args... args) const;
 
-    bool connected() const override;
+    [[nodiscard]] bool connected() const override;
 
 private:
     void disconnect() override;

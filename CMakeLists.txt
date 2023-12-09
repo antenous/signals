@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.15)
 project(signals
-    VERSION 1.1.0
+    VERSION 2.0.0
     DESCRIPTION "A simple signals and slots library"
     HOMEPAGE_URL "https://gitlab.com/antenous/signals"
     LANGUAGES CXX)
@@ -23,7 +23,7 @@ add_library(signals
     src/Connection.cpp
     src/ScopedConnection.cpp)
 add_library(signals::signals ALIAS signals)
-target_compile_features(signals PRIVATE cxx_std_17)
+target_compile_features(signals PRIVATE cxx_std_20)
 target_compile_options(signals PRIVATE
     $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:
         -Wall -Werror -Wextra -pedantic>

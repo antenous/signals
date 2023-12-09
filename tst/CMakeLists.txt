@@ -6,7 +6,7 @@ add_executable(${test}
     ScopedConnection_test.cpp
     Signal_test.cpp
     Slot_test.cpp)
-target_compile_features(${test} PRIVATE cxx_std_17)
+target_compile_features(${test} PRIVATE cxx_std_20)
 target_compile_options(${test} PRIVATE
     $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:
         -Wall -Werror -Wextra -pedantic>

@@ -7,6 +7,7 @@
 #include "Connection.hpp"
 #include "Slot.hpp"
 #include <algorithm>
+#include <ranges>
 #include <vector>
 
 namespace signals
@@ -33,9 +34,9 @@ public:
 
     void clear();
 
-    bool empty() const;
+    [[nodiscard]] bool empty() const;
 
-    auto num_slots() const;
+    [[nodiscard]] auto num_slots() const;
 
     auto connect(typename Slot::Callable callable);
 
@@ -46,8 +47,6 @@ private:
     using Slots = std::vector<std::shared_ptr<Slot>>;
 
     void removeDisconnectedSlots();
-
-    auto immutableSlots() const -> Slots;
 
     Slots slots;
 };
@@ -71,13 +70,13 @@ void Signal<Signature, Combiner>::clear()
 template<typename Signature, typename Combiner>
 bool Signal<Signature, Combiner>::empty() const
 {
-    return std::none_of(std::cbegin(slots), std::cend(slots), std::mem_fn(&Slot::connected));
+    return std::ranges::none_of(slots, std::mem_fn(&Slot::connected));
 }
 
 template<typename Signature, typename Combiner>
 auto Signal<Signature, Combiner>::num_slots() const
 {
-    return std::count_if(std::cbegin(slots), std::cend(slots), std::mem_fn(&Slot::connected));
+    return std::ranges::count_if(slots, std::mem_fn(&Slot::connected));
 }
 
 template<typename Signature, typename Combiner>
@@ -90,23 +89,17 @@ auto Signal<Signature, Combiner>::connect(typename Slot::Callable callable)
 template<typename Signature, typename Combiner>
 void Signal<Signature, Combiner>::removeDisconnectedSlots()
 {
-    slots.erase(
-        std::remove_if(
-            std::begin(slots), std::end(slots), std::not_fn(std::mem_fn(&Slot::connected))),
-        slots.end());
+    std::erase_if(slots, std::not_fn(std::mem_fn(&Slot::connected)));
 }
 
 template<typename Signature, typename Combiner>
 template<typename... Args>
 inline auto Signal<Signature, Combiner>::operator()(Args&&... args) const
 {
-    return std::invoke(Combiner{}, immutableSlots(), std::forward<Args>(args)...);
-}
-
-template<typename Signature, typename Combiner>
-auto Signal<Signature, Combiner>::immutableSlots() const -> Slots
-{
-    return slots;
+    const auto immutable = slots;
+    return std::invoke(
+        Combiner{}, immutable | std::views::filter(std::mem_fn(&Slot::connected)),
+        std::forward<Args>(args)...);
 }
 
 } // namespace signals

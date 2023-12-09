@@ -17,8 +17,7 @@ struct DefaultCombiner
         auto r = R{};
 
         for (auto& slot : slots)
-            if (slot->connected())
-                r = std::invoke(*slot, args...);
+            r = std::invoke(*slot, args...);
 
         return r;
     }
@@ -31,8 +30,7 @@ struct DefaultCombiner<void>
     void operator()(Slots slots, Args&&... args) const
     {
         for (auto& slot : slots)
-            if (slot->connected())
-                std::invoke(*slot, args...);
+            std::invoke(*slot, args...);
     }
 };
 

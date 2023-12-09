@@ -1,9 +1,14 @@
-image: ubuntu:20.04
+image: ubuntu:22.04
 
 before_script:
    - apt-get update -qq &&
      DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends -qq
-     build-essential ca-certificates clang cmake gcovr git lcov ninja-build
+     build-essential ca-certificates cmake gcovr git gnupg lcov ninja-build software-properties-common wget
+   - wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -
+   - add-apt-repository -y deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-16 main &&
+     apt-get update -qq &&
+     DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends -qq
+     clang-16
 
 build:
    stage: build
@@ -14,8 +19,7 @@ build:
 test:
    stage: test
    script:
-   - update-alternatives --set c++ /usr/bin/clang++
-   - cmake -S . -B build/ -G Ninja -DCMAKE_BUILD_TYPE=Debug
+   - CXX=/usr/bin/clang++-16 cmake -S . -B build/ -G Ninja -DCMAKE_BUILD_TYPE=Debug
    - cmake --build build/ --target test-signals
    - ./build/tst/test-signals --gtest_output="xml:report.xml"
    artifacts:

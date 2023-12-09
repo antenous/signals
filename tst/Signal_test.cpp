@@ -20,7 +20,7 @@ protected:
         ::bytesAllocated = bytesAllocated = std::make_shared<std::size_t>(0);
     }
 
-    auto measureSizeofSlot(typename Signal::Slot::Callable callable) const
+    [[nodiscard]] auto measureSizeofSlot(typename Signal::Slot::Callable callable) const
     {
         const auto bytesBefore = *bytesAllocated;
         auto slot = std::make_shared<Signal::Slot>(std::move(callable));
@@ -169,6 +169,21 @@ TEST_F(SignalTest, DoNotInvokeDisconnectedSlotOnSignal)
     EXPECT_EQ(4, result);
 }
 
+TEST_F(SignalTest, DoNotInvokeDisconnectedSlotOnSignalWhenDisconnectedDuringSignal)
+{
+    auto result = 1;
+    auto connection = signals::Connection{};
+
+    signal.connect([&connection, &result] {
+        connection.disconnect();
+        result *= 2;
+    });
+    connection = signal.connect(add(result, 3));
+
+    signal();
+    EXPECT_EQ(2, result);
+}
+
 TEST_F(SignalTest, DoNotCrashWhenInvokedSlotConnectsNewSlot)
 {
     auto slotInvoked = false;
@@ -272,8 +287,7 @@ struct Sum
         auto r = R{};
 
         for (auto& slot : slots)
-            if (slot->connected())
-                r += std::invoke(*slot, args...);
+            r += std::invoke(*slot, args...);
 
         return r;
     }
@@ -301,8 +315,7 @@ struct Collector
         auto r = R{};
 
         for (auto& slot : slots)
-            if (slot->connected())
-                r.push_back(std::invoke(*slot, args...));
+            r.push_back(std::invoke(*slot, args...));
 
         return r;
     }

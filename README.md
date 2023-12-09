@@ -10,9 +10,11 @@ inspired by [boost::signals2](https://www.boost.org/doc/libs/release/libs/signal
 
 The following tools are needed to configure and build the project:
 * [CMake](https://cmake.org/) version 3.15 or later
-* [gcc](https://gcc.gnu.org/) version 5 or later
+* [gcc](https://gcc.gnu.org/) version 11 or later
+  [Clang](https://clang.llvm.org/) version 16 or later
 * [git](https://git-scm.com/)
-* [Make](https://www.gnu.org/software/make/) or [Ninja](https://ninja-build.org/)
+* [Make](https://www.gnu.org/software/make/) or
+  [Ninja](https://ninja-build.org/)
 
 Tools used to measure code coverage:
 * [lcov](http://ltp.sourceforge.net/coverage/lcov.php)

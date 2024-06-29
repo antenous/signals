@@ -8,33 +8,32 @@
 namespace signals
 {
 
-template<typename, typename>
-class Event;
-
-template<typename T, typename R, typename... Args>
-class Event<T, R(Args...)>
+template<typename T, typename Signature>
+class Event
 {
 public:
-    using Signal = signals::Signal<R(Args...)>;
+    template<typename Fn>
+    static auto subscribe(Fn&& fn);
 
-    static auto subscribe(typename Signal::Slot::Callable callable);
-
-    void operator()(Args... args) const;
+    template<typename... Args>
+    auto operator()(Args&&... args) const;
 
 private:
-    inline static Signal signal;
+    static inline Signal<Signature> signal;
 };
 
-template<typename T, typename R, typename... Args>
-auto Event<T, R(Args...)>::subscribe(typename Signal::Slot::Callable callable)
+template<typename T, typename Signature>
+template<typename Fn>
+inline auto Event<T, Signature>::subscribe(Fn&& fn)
 {
-    return signal.connect(std::move(callable));
+    return signal.connect(std::forward<Fn>(fn));
 }
 
-template<typename T, typename R, typename... Args>
-void Event<T, R(Args...)>::operator()(Args... args) const
+template<typename T, typename Signature>
+template<typename... Args>
+inline auto Event<T, Signature>::operator()(Args&&... args) const
 {
-    std::invoke(signal, args...);
+    return std::invoke(signal, std::forward<Args>(args)...);
 }
 
 } // namespace signals

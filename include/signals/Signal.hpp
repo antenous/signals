@@ -3,22 +3,19 @@
 #ifndef SIGNALS_SIGNAL_HPP_
 #define SIGNALS_SIGNAL_HPP_
 
-#include <algorithm>
-#include <vector>
 #include "Slot.hpp"
 #include "Connection.hpp"
+#include <algorithm>
+#include <vector>
 
 namespace signals
 {
 
-template<typename>
-class Signal;
-
-template<typename R, typename... Args>
-class Signal<R(Args...)>
+template<typename Signature>
+class Signal
 {
 public:
-    using Slot = signals::Slot<R(Args...)>;
+    using Slot = signals::Slot<Signature>;
 
     Signal() = default;
 
@@ -40,7 +37,8 @@ public:
 
     auto connect(typename Slot::Callable callable);
 
-    void operator()(Args... args) const;
+    template<typename... Args>
+    void operator()(Args&&... args) const;
 
 private:
     using Slots = std::vector<std::shared_ptr<Slot>>;
@@ -52,8 +50,8 @@ private:
     Slots slots;
 };
 
-template<typename R, typename... Args>
-Signal<R(Args...)>& Signal<R(Args...)>::operator=(Signal&& other) noexcept
+template<typename Signature>
+auto Signal<Signature>::operator=(Signal&& other) noexcept -> Signal&
 {
     if (this == &other)
         return *this;
@@ -62,33 +60,33 @@ Signal<R(Args...)>& Signal<R(Args...)>::operator=(Signal&& other) noexcept
     return *this;
 }
 
-template<typename R, typename... Args>
-void Signal<R(Args...)>::clear()
+template<typename Signature>
+void Signal<Signature>::clear()
 {
     slots.clear();
 }
 
-template<typename R, typename... Args>
-bool Signal<R(Args...)>::empty() const
+template<typename Signature>
+bool Signal<Signature>::empty() const
 {
     return std::none_of(std::cbegin(slots), std::cend(slots), std::mem_fn(&Slot::connected));
 }
 
-template<typename R, typename... Args>
-auto Signal<R(Args...)>::num_slots() const
+template<typename Signature>
+auto Signal<Signature>::num_slots() const
 {
     return std::count_if(std::cbegin(slots), std::cend(slots), std::mem_fn(&Slot::connected));
 }
 
-template<typename R, typename... Args>
-auto Signal<R(Args...)>::connect(typename Slot::Callable callable)
+template<typename Signature>
+auto Signal<Signature>::connect(typename Slot::Callable callable)
 {
     removeDisconnectedSlots();
     return Connection{slots.emplace_back(std::make_shared<Slot>(std::move(callable)))};
 }
 
-template<typename R, typename... Args>
-void Signal<R(Args...)>::removeDisconnectedSlots()
+template<typename Signature>
+void Signal<Signature>::removeDisconnectedSlots()
 {
     slots.erase(
         std::remove_if(
@@ -96,16 +94,17 @@ void Signal<R(Args...)>::removeDisconnectedSlots()
         slots.end());
 }
 
-template<typename R, typename... Args>
-void Signal<R(Args...)>::operator()(Args... args) const
+template<typename Signature>
+template<typename... Args>
+inline void Signal<Signature>::operator()(Args&&... args) const
 {
     for (auto& slot : immutableSlots())
         if (slot->connected())
             std::invoke(*slot, args...);
 }
 
-template<typename R, typename... Args>
-auto Signal<R(Args...)>::immutableSlots() const
+template<typename Signature>
+auto Signal<Signature>::immutableSlots() const
 {
     return slots;
 }

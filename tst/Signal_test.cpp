@@ -143,6 +143,20 @@ TEST_F(SignalTest, InvokeConnectedSlotsWithArgumentsOnSignal)
     EXPECT_EQ(5, result);
 }
 
+TEST_F(SignalTest, InvokeConnectedSlotsWithMultipleArgumentsOnSignal)
+{
+    auto result = 0;
+    auto multi = signals::Signal<void(int&, int)>{};
+
+    multi.connect([](int& i, int j) {
+        i += j;
+    });
+
+    multi(result, 42);
+
+    EXPECT_EQ(42, result);
+}
+
 TEST_F(SignalTest, DoNotInvokeDisconnectedSlotOnSignal)
 {
     auto result = 1;
@@ -157,17 +171,13 @@ TEST_F(SignalTest, DoNotInvokeDisconnectedSlotOnSignal)
 
 TEST_F(SignalTest, DoNotCrashWhenInvokedSlotConnectsNewSlot)
 {
-    // clang-format off
     auto slotInvoked = false;
-    signal.connect([this, &slotInvoked]
-    {
-        signal.connect([&slotInvoked]
-        {
+    signal.connect([this, &slotInvoked] {
+        signal.connect([&slotInvoked] {
             slotInvoked = true;
         });
     });
     signal.connect(noop);
-    // clang-format on
 
     // Having two slots connected before connecting a third one
     // should cause the slots vector to reallocate invalidating

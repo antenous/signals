@@ -1,7 +1,7 @@
 // Copyright (c) 2020 Antero Nousiainen
 
 #include <signals/Signal.hpp>
-#include <gtest/gtest.h>
+#include <gmock/gmock.h>
 
 namespace
 {
@@ -248,6 +248,77 @@ TEST_F(SignalTest, IsSelfMoveSafe)
     signal();
     EXPECT_FALSE(signal.empty());
     EXPECT_EQ(5, result);
+}
+
+TEST_F(SignalTest, ReturnLastValueWhenDefaultCombinerIsUsed)
+{
+    auto last = signals::Signal<int()>{};
+
+    // clang-format off
+    last.connect([]{ return 1; });
+    last.connect([]{ return 2; });
+    last.connect([]{ return 3; });
+    // clang-format on
+
+    EXPECT_EQ(3, last());
+}
+
+template<typename R>
+struct Sum
+{
+    template<typename Slots, typename... Args>
+    auto operator()(Slots slots, Args&&... args) const
+    {
+        auto r = R{};
+
+        for (auto& slot : slots)
+            if (slot->connected())
+                r += std::invoke(*slot, args...);
+
+        return r;
+    }
+};
+
+TEST_F(SignalTest, SupportCustomResultCombiner)
+{
+    auto sum = signals::Signal<int(), Sum<int>>{};
+
+    // clang-format off
+    sum.connect([]{ return 1; });
+    sum.connect([]{ return 2; });
+    sum.connect([]{ return 3; });
+    // clang-format on
+
+    EXPECT_EQ(6, sum());
+}
+
+template<typename R>
+struct Collector
+{
+    template<typename Slots, typename... Args>
+    auto operator()(Slots slots, Args&&... args) const
+    {
+        auto r = R{};
+
+        for (auto& slot : slots)
+            if (slot->connected())
+                r.push_back(std::invoke(*slot, args...));
+
+        return r;
+    }
+};
+
+TEST_F(SignalTest, SupportArbitraryCombinerResultType)
+{
+    auto collection = signals::Signal<int(), Collector<std::vector<int>>>{};
+
+    // clang-format off
+    collection.connect([]{ return 1; });
+    collection.connect([]{ return 2; });
+    collection.connect([]{ return 3; });
+    // clang-format on
+
+    EXPECT_THAT(collection(), ElementsAre(1, 2, 3));
 }
 } // namespace
 

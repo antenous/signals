@@ -41,6 +41,12 @@ TEST_F(SlotTest, CallableTypeIsStdFunction)
     EXPECT_TRUE((std::is_same_v<std::function<int()>, Slot::Callable>));
 }
 
+TEST_F(SlotTest, ReturnType)
+{
+    EXPECT_TRUE((std::is_same_v<int, Slot::Result>));
+    EXPECT_TRUE((std::is_same_v<void, signals::Slot<void(int)>::Result>));
+}
+
 TEST_F(SlotTest, ReturnResultOfCallableWhenInvoked)
 {
     const auto result = 42;

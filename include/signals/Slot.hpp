@@ -18,6 +18,8 @@ class Slot<R(Args...)> : public Disconnectable
 public:
     using Callable = std::function<R(Args...)>;
 
+    using Result = R;
+
     explicit Slot(Callable callable);
 
     Slot(const Slot&) = delete;

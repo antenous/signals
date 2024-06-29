@@ -8,7 +8,7 @@ namespace
 {
 using namespace testing;
 
-struct TestEvent : signals::Event<TestEvent, void(int)>
+struct TestEvent : signals::Event<TestEvent, bool(int)>
 {
 };
 
@@ -20,14 +20,11 @@ protected:
 
 TEST_F(EventTest, InvokeSubscriberOnEvent)
 {
-    auto subscriberInvoked = false;
+    signals::ScopedConnection scopedSubscription = TestEvent::subscribe([](int answer) {
+        return (answer == 42);
+    });
 
-    signals::ScopedConnection scopedSubscription =
-        TestEvent::subscribe([&subscriberInvoked](int answer) {
-            subscriberInvoked = (answer == 42);
-        });
-
-    event(42);
-    EXPECT_TRUE(subscriberInvoked);
+    EXPECT_TRUE(event(42));
+    EXPECT_FALSE(event(13));
 }
 } // namespace

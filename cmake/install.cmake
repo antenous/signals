@@ -3,11 +3,16 @@
 # @PACKAGE_INIT@
 # include(${CMAKE_CURRENT_LIST_DIR}/@targets_export_name@.cmake)
 # check_required_components(@PROJECT_NAME@)
+#
+# NOTE:
+# Include this module before using CMAKE_INSTALL_* variables in target
+# properties (for example CMAKE_INSTALL_INCLUDEDIR in INSTALL_INTERFACE paths).
+
+include_guard(GLOBAL)
+include(GNUInstallDirs)
+include(CMakePackageConfigHelpers)
 
 function(target_install target)
-    include(GNUInstallDirs)
-    include(CMakePackageConfigHelpers)
-
     set(cmake_dir ${CMAKE_INSTALL_LIBDIR}/cmake/${target})
     set(version_config ${PROJECT_BINARY_DIR}/${target}-config-version.cmake)
     set(project_config_name ${target}-config.cmake)

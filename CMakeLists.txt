@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.15)
 project(signals
-    VERSION 2.0.1
+    VERSION 2.0.2
     DESCRIPTION "A simple signals and slots library"
     HOMEPAGE_URL "https://gitlab.com/antenous/signals"
     LANGUAGES CXX)
@@ -18,6 +18,7 @@ cmake_dependent_option(SIGNALS_TEST "Enable tests" OFF "NOT SIGNALS_STANDALONE_P
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake)
 include(colordiagnostics)
+include(install)
 
 add_library(signals
     src/Connection.cpp
@@ -33,7 +34,6 @@ target_include_directories(signals PUBLIC
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 
 if(SIGNALS_STANDALONE_PROJECT)
-    include(install)
     include(package)
     include(uninstall)
     target_install(signals)

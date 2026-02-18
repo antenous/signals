@@ -5,3 +5,6 @@
 
 # Configuration and build files
 /build/
+
+# AI tools
+/AGENTS.md

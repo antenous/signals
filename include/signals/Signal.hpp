@@ -43,7 +43,7 @@ public:
 
     template<typename... Args>
     requires std::invocable<signals::Slot<Signature>&, Args...>
-    auto operator()(Args&&... args) const;
+    decltype(auto) operator()(Args&&... args) const;
 
 private:
     using Slots = std::vector<std::shared_ptr<Slot>>;
@@ -97,7 +97,7 @@ void Signal<Signature, Combiner>::removeDisconnectedSlots()
 template<typename Signature, typename Combiner>
 template<typename... Args>
 requires std::invocable<signals::Slot<Signature>&, Args...>
-inline auto Signal<Signature, Combiner>::operator()(Args&&... args) const
+inline decltype(auto) Signal<Signature, Combiner>::operator()(Args&&... args) const
 {
     const auto immutable = slots;
     return std::invoke(

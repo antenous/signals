@@ -324,6 +324,65 @@ TEST_F(SignalTest, ReturnLastValueWhenDefaultCombinerIsUsed)
     EXPECT_EQ(3, last());
 }
 
+TEST_F(SignalTest, ReturnDefaultConstructedValueWhenNoConnectedSlotsExist)
+{
+    auto last = signals::Signal<int()>{};
+    auto connection = last.connect([] {
+        return 42;
+    });
+    connection.disconnect();
+
+    EXPECT_EQ(0, last());
+}
+
+struct NonDefaultResult
+{
+    explicit NonDefaultResult(int value) :
+        value(value)
+    {
+    }
+
+    int value;
+};
+
+TEST_F(SignalTest, SupportNonDefaultConstructibleSlotResultWithDefaultCombiner)
+{
+    auto last = signals::Signal<NonDefaultResult()>{};
+    last.connect([] {
+        return NonDefaultResult{42};
+    });
+
+    EXPECT_EQ(42, last().value);
+}
+
+TEST_F(SignalTest, ThrowWhenNoConnectedSlotsAndResultIsNotDefaultConstructible)
+{
+    auto last = signals::Signal<NonDefaultResult()>{};
+
+    EXPECT_THROW(last(), std::bad_function_call);
+}
+
+TEST_F(SignalTest, SupportReferenceSlotResultWithDefaultCombiner)
+{
+    auto first = 1;
+    auto second = 2;
+    auto last = signals::Signal<int&()>{};
+
+    last.connect([&first]() -> int& {
+        return first;
+    });
+
+    last.connect([&second]() -> int& {
+        return second;
+    });
+
+    auto& result = last();
+    result = 7;
+
+    EXPECT_EQ(1, first);
+    EXPECT_EQ(7, second);
+}
+
 template<typename R>
 struct Sum
 {

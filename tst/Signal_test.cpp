@@ -327,9 +327,11 @@ TEST_F(SignalTest, ReturnLastValueWhenDefaultCombinerIsUsed)
 TEST_F(SignalTest, ReturnDefaultConstructedValueWhenNoConnectedSlotsExist)
 {
     auto last = signals::Signal<int()>{};
+    // LCOV_EXCL_START
     auto connection = last.connect([] {
         return 42;
     });
+    // LCOV_EXCL_STOP
     connection.disconnect();
 
     EXPECT_EQ(0, last());

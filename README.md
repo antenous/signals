@@ -263,7 +263,7 @@ include(FetchContent)
 
 FetchContent_Declare(signals
     GIT_REPOSITORY https://gitlab.com/antenous/signals.git
-    GIT_TAG v2.0.5)
+    GIT_TAG v2.0.0)
 
 set(SIGNALS_TEST OFF CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(signals)

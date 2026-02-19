@@ -144,6 +144,11 @@ TEST_F(SignalTest, InvokeConnectedSlotsWithArgumentsOnSignal)
     EXPECT_EQ(5, result);
 }
 
+TEST_F(SignalTest, RejectRvalueArgumentForLvalueReferenceParameter)
+{
+    EXPECT_FALSE((std::is_invocable_v<SignalWithParams&, int>));
+}
+
 TEST_F(SignalTest, InvokeConnectedSlotsWithMultipleArgumentsOnSignal)
 {
     auto result = 0;

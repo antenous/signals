@@ -7,6 +7,7 @@
 #include "Connection.hpp"
 #include "Slot.hpp"
 #include <algorithm>
+#include <concepts>
 #include <ranges>
 #include <vector>
 
@@ -41,6 +42,7 @@ public:
     auto connect(typename Slot::Callable callable);
 
     template<typename... Args>
+    requires std::invocable<signals::Slot<Signature>&, Args...>
     auto operator()(Args&&... args) const;
 
 private:
@@ -94,6 +96,7 @@ void Signal<Signature, Combiner>::removeDisconnectedSlots()
 
 template<typename Signature, typename Combiner>
 template<typename... Args>
+requires std::invocable<signals::Slot<Signature>&, Args...>
 inline auto Signal<Signature, Combiner>::operator()(Args&&... args) const
 {
     const auto immutable = slots;

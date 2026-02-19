@@ -2,6 +2,7 @@
 
 #include <signals/Signal.hpp>
 #include <gmock/gmock.h>
+#include <vector>
 
 namespace
 {
@@ -263,6 +264,46 @@ TEST_F(SignalTest, IsSelfMoveSafe)
     signal();
     EXPECT_FALSE(signal.empty());
     EXPECT_EQ(5, result);
+}
+
+struct MoveSentinel
+{
+    int value = 0;
+
+    explicit MoveSentinel(int value) :
+        value(value)
+    {
+    }
+
+    MoveSentinel(const MoveSentinel&) = default;
+
+    MoveSentinel(MoveSentinel&& other) noexcept :
+        value(other.value)
+    {
+        other.value = -1;
+    }
+};
+
+TEST_F(SignalTest, DeliverEquivalentValueToMultipleSlotsWhenSignalingRvalue)
+{
+    // This test verifies that when a signal is emitted with an rvalue argument, the argument
+    // is copied for each slot, and each slot receives an equivalent value. If the argument
+    // were moved instead of copied, only the first slot would receive the correct value, and
+    // subsequent slots would receive a moved-from object.
+
+    auto fanoutSignal = signals::Signal<void(MoveSentinel)>{};
+    auto seen = std::vector<int>{};
+
+    fanoutSignal.connect([&seen](MoveSentinel sentinel) {
+        seen.push_back(sentinel.value);
+    });
+    fanoutSignal.connect([&seen](MoveSentinel sentinel) {
+        seen.push_back(sentinel.value);
+    });
+
+    fanoutSignal(MoveSentinel{7});
+
+    EXPECT_THAT(seen, ElementsAre(7, 7));
 }
 
 TEST_F(SignalTest, ReturnLastValueWhenDefaultCombinerIsUsed)

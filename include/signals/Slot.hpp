@@ -5,6 +5,7 @@
 
 #include "Disconnectable.hpp"
 #include <functional>
+#include <type_traits>
 
 namespace signals
 {
@@ -12,10 +13,25 @@ namespace signals
 template<typename>
 class Slot;
 
+/**
+ * @brief Type-erased callable wrapper used by Signal.
+ *
+ * Rvalue-reference parameters in the signature are intentionally unsupported.
+ * Slots are dispatched through type-erased callables, and call arguments are
+ * materialized before invocation, so preserving `T&&` signature semantics is
+ * not reliable across dispatch. Allowing `T&&` in the slot signature would
+ * therefore suggest move-only call contracts that this API cannot guarantee.
+ *
+ * Use by-value, `const T&`, or `T&` parameters instead.
+ */
 template<typename R, typename... Args>
 class Slot<R(Args...)> : public Disconnectable
 {
 public:
+    static_assert(
+        (!std::is_rvalue_reference_v<Args> && ...),
+        "signals::Slot does not support rvalue-reference parameters in signatures");
+
     using Callable = std::function<R(Args...)>;
 
     using Result = R;

@@ -34,7 +34,7 @@ private:
 
 public:
     template<typename Slots, typename... Args>
-    R operator()(Slots slots, Args&&... args) const
+    auto operator()(Slots slots, Args&&... args) const -> R
     {
         auto result = std::optional<Storage>{};
 
@@ -45,7 +45,7 @@ public:
     }
 
 private:
-    static R unwrap(Storage&& value)
+    static auto unwrap(Storage&& value) -> R
     {
         if constexpr (std::is_reference_v<R>)
             return value.get();
@@ -53,7 +53,7 @@ private:
             return std::move(value);
     }
 
-    static R fallback()
+    static auto fallback() -> R
     {
         if constexpr (std::is_default_constructible_v<R>)
             return R{};

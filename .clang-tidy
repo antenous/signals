@@ -19,6 +19,7 @@ Checks: >
   -readability-braces-around-statements,
   -readability-identifier-length,
   -readability-magic-numbers,
+  -readability-qualified-auto,
   -misc-include-cleaner,
   -cppcoreguidelines-avoid-magic-numbers,
   -cppcoreguidelines-missing-std-forward,

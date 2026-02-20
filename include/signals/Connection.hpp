@@ -24,16 +24,16 @@ public:
 
     ~Connection() = default;
 
-    Connection& operator=(const Connection&) = default;
+    auto operator=(const Connection&) -> Connection& = default;
 
-    Connection& operator=(Connection&& other) noexcept;
+    auto operator=(Connection&& other) noexcept -> Connection&;
 
-    [[nodiscard]] bool connected() const;
+    [[nodiscard]] auto connected() const -> bool;
 
     void disconnect();
 
 protected:
-    [[nodiscard]] bool aliases(const Connection& other) const;
+    [[nodiscard]] auto aliases(const Connection& other) const -> bool;
 
 private:
     Disconnectable::weak_type slot;

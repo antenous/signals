@@ -20,9 +20,9 @@ class CopyOnlyByValue
 public:
     CopyOnlyByValue() = default;
     CopyOnlyByValue(const CopyOnlyByValue&) = default;
-    CopyOnlyByValue& operator=(const CopyOnlyByValue&) = default;
+    auto operator=(const CopyOnlyByValue&) -> CopyOnlyByValue& = default;
     CopyOnlyByValue(CopyOnlyByValue&&) = delete;
-    CopyOnlyByValue& operator=(CopyOnlyByValue&&) = delete;
+    auto operator=(CopyOnlyByValue&&) -> CopyOnlyByValue& = delete;
     ~CopyOnlyByValue() = default;
 };
 

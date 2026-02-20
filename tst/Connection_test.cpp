@@ -12,7 +12,7 @@ using namespace testing;
 class Slot : public Disconnectable
 {
 public:
-    [[nodiscard]] bool connected() const override
+    [[nodiscard]] auto connected() const -> bool override
     {
         return isConnected;
     }

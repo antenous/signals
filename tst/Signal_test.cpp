@@ -280,7 +280,7 @@ struct MoveSentinel
     }
 
     MoveSentinel(const MoveSentinel&) = default;
-    MoveSentinel& operator=(const MoveSentinel&) = default;
+    auto operator=(const MoveSentinel&) -> MoveSentinel& = default;
 
     MoveSentinel(MoveSentinel&& other) noexcept :
         value(other.value)
@@ -457,7 +457,7 @@ TEST_F(SignalTest, SupportArbitraryCombinerResultType)
 } // namespace
 
 // Overridden operator new to spy on how many bytes are allocated
-void* operator new(std::size_t count)
+auto operator new(std::size_t count) -> void*
 {
     if (auto bytes = bytesAllocated.lock(); bytes)
         *bytes += count;
@@ -470,7 +470,7 @@ void operator delete(void* ptr) noexcept
     std::free(ptr);
 }
 
-void operator delete(void* ptr, std::size_t) noexcept
+void operator delete(void* ptr, [[maybe_unused]] std::size_t size) noexcept
 {
     std::free(ptr);
 }

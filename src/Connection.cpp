@@ -10,7 +10,7 @@ Connection::Connection(const Disconnectable& slot) noexcept :
 {
 }
 
-Connection& Connection::operator=(Connection&& other) noexcept
+auto Connection::operator=(Connection&& other) noexcept -> Connection&
 {
     if (this == &other)
         return *this;
@@ -19,7 +19,7 @@ Connection& Connection::operator=(Connection&& other) noexcept
     return *this;
 }
 
-bool Connection::connected() const
+auto Connection::connected() const -> bool
 {
     const auto s = slot.lock();
     return s && s->connected();
@@ -31,7 +31,7 @@ void Connection::disconnect()
         s->disconnect();
 }
 
-bool Connection::aliases(const Connection& other) const
+auto Connection::aliases(const Connection& other) const -> bool
 {
     return !slot.owner_before(other.slot) && !other.slot.owner_before(slot);
 }

@@ -11,7 +11,7 @@ class Disconnectable
 public:
     virtual ~Disconnectable() = default;
 
-    [[nodiscard]] virtual bool connected() const = 0;
+    [[nodiscard]] virtual auto connected() const -> bool = 0;
 
     virtual void disconnect() = 0;
 };

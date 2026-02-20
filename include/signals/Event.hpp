@@ -16,7 +16,7 @@ public:
     static auto subscribe(Fn&& fn);
 
     template<typename... Args>
-    decltype(auto) operator()(Args&&... args) const;
+    auto operator()(Args&&... args) const -> decltype(auto);
 
 private:
     static inline Signal<Signature> signal;
@@ -31,7 +31,7 @@ inline auto Event<T, Signature>::subscribe(Fn&& fn)
 
 template<typename T, typename Signature>
 template<typename... Args>
-inline decltype(auto) Event<T, Signature>::operator()(Args&&... args) const
+inline auto Event<T, Signature>::operator()(Args&&... args) const -> decltype(auto)
 {
     return std::invoke(signal, std::forward<Args>(args)...);
 }

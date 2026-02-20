@@ -23,15 +23,15 @@ public:
 
     ~ScopedConnection();
 
-    ScopedConnection& operator=(const ScopedConnection&) = delete;
+    auto operator=(const ScopedConnection&) -> ScopedConnection& = delete;
 
-    ScopedConnection& operator=(ScopedConnection&& other) noexcept;
+    auto operator=(ScopedConnection&& other) noexcept -> ScopedConnection&;
 
-    ScopedConnection& operator=(const Connection& connection) noexcept;
+    auto operator=(const Connection& connection) noexcept -> ScopedConnection&;
 
-    ScopedConnection& operator=(Connection&& connection) noexcept;
+    auto operator=(Connection&& connection) noexcept -> ScopedConnection&;
 
-    Connection release();
+    auto release() -> Connection;
 
 private:
     void assignAfterDisconnect(Connection connection);

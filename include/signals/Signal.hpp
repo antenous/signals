@@ -29,13 +29,13 @@ public:
 
     ~Signal() = default;
 
-    Signal& operator=(const Signal&) = delete;
+    auto operator=(const Signal&) -> Signal& = delete;
 
-    Signal& operator=(Signal&& other) noexcept;
+    auto operator=(Signal&& other) noexcept -> Signal&;
 
     void clear();
 
-    [[nodiscard]] bool empty() const;
+    [[nodiscard]] auto empty() const -> bool;
 
     [[nodiscard]] auto num_slots() const;
 
@@ -43,7 +43,7 @@ public:
 
     template<typename... Args>
     requires std::invocable<signals::Slot<Signature>&, Args...>
-    decltype(auto) operator()(Args&&... args) const;
+    auto operator()(Args&&... args) const -> decltype(auto);
 
 private:
     using Slots = std::vector<std::shared_ptr<Slot>>;
@@ -70,7 +70,7 @@ void Signal<Signature, Combiner>::clear()
 }
 
 template<typename Signature, typename Combiner>
-bool Signal<Signature, Combiner>::empty() const
+auto Signal<Signature, Combiner>::empty() const -> bool
 {
     return std::ranges::none_of(slots, std::mem_fn(&Slot::connected));
 }
@@ -97,7 +97,7 @@ void Signal<Signature, Combiner>::removeDisconnectedSlots()
 template<typename Signature, typename Combiner>
 template<typename... Args>
 requires std::invocable<signals::Slot<Signature>&, Args...>
-inline decltype(auto) Signal<Signature, Combiner>::operator()(Args&&... args) const
+inline auto Signal<Signature, Combiner>::operator()(Args&&... args) const -> decltype(auto)
 {
     const auto immutable = slots;
     return std::invoke(

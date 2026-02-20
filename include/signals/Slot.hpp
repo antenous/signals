@@ -60,14 +60,14 @@ public:
 
     ~Slot() override = default;
 
-    Slot& operator=(const Slot&) = delete;
+    auto operator=(const Slot&) -> Slot& = delete;
 
-    Slot& operator=(Slot&&) = delete;
+    auto operator=(Slot&&) -> Slot& = delete;
 
-    R operator()(Args... args) const
+    auto operator()(Args... args) const -> R
     requires((std::is_reference_v<Args> || std::is_copy_constructible_v<Args>) && ...);
 
-    [[nodiscard]] bool connected() const override;
+    [[nodiscard]] auto connected() const -> bool override;
 
 private:
     void disconnect() override;
@@ -82,7 +82,7 @@ Slot<R(Args...)>::Slot(Callable callable) :
 }
 
 template<typename R, typename... Args>
-bool Slot<R(Args...)>::connected() const
+auto Slot<R(Args...)>::connected() const -> bool
 {
     return callable != nullptr;
 }
@@ -94,7 +94,7 @@ void Slot<R(Args...)>::disconnect()
 }
 
 template<typename R, typename... Args>
-R Slot<R(Args...)>::operator()(Args... args) const
+auto Slot<R(Args...)>::operator()(Args... args) const -> R
 requires((std::is_reference_v<Args> || std::is_copy_constructible_v<Args>) && ...)
 {
     return std::invoke(callable, args...);

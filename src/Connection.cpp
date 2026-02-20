@@ -31,4 +31,9 @@ void Connection::disconnect()
         s->disconnect();
 }
 
+bool Connection::aliases(const Connection& other) const
+{
+    return !slot.owner_before(other.slot) && !other.slot.owner_before(slot);
+}
+
 } // namespace signals

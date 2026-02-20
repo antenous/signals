@@ -119,6 +119,18 @@ TEST_F(ScopedConnectionTest, DoNotDisconnectSourceConnectionWhenConnectionCopyAs
     EXPECT_TRUE(target.connected());
 }
 
+TEST_F(ScopedConnectionTest, KeepConnectionWhenCopyAssigningAliasingConnection)
+{
+    auto source = Connection{slot};
+    auto target = ScopedConnection{source};
+
+    target = source;
+
+    EXPECT_TRUE(source.connected());
+    EXPECT_TRUE(target.connected());
+    EXPECT_TRUE(slot->connected());
+}
+
 TEST_F(ScopedConnectionTest, DisconnectWhenMoveAssigned)
 {
     const auto connection = Connection{slot};
@@ -160,6 +172,31 @@ TEST_F(ScopedConnectionTest, DisconnectSourceConnectionWhenConnectionMoveAssigne
     auto target = ScopedConnection{};
 
     auto source = Connection{slot};
+    target = std::move(source);
+
+    EXPECT_FALSE(source.connected());
+    EXPECT_TRUE(target.connected());
+    EXPECT_TRUE(slot->connected());
+}
+
+TEST_F(ScopedConnectionTest, KeepConnectionWhenMoveAssigningAliasingConnection)
+{
+    auto source = Connection{slot};
+    auto target = ScopedConnection{source};
+
+    target = std::move(source);
+
+    EXPECT_FALSE(source.connected());
+    EXPECT_TRUE(target.connected());
+    EXPECT_TRUE(slot->connected());
+}
+
+TEST_F(ScopedConnectionTest, KeepConnectionWhenMoveAssigningAliasingScopedConnection)
+{
+    const auto connection = Connection{slot};
+    auto source = ScopedConnection{connection};
+    auto target = ScopedConnection{connection};
+
     target = std::move(source);
 
     EXPECT_FALSE(source.connected());

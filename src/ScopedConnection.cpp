@@ -22,25 +22,40 @@ ScopedConnection::~ScopedConnection()
 
 ScopedConnection& ScopedConnection::operator=(ScopedConnection&& other) noexcept
 {
-    if (this == &other)
-        return *this;
+    if (this != &other)
+        *this = other.release();
 
-    disconnect();
-    Connection::operator=(std::move(other));
     return *this;
 }
 
 ScopedConnection& ScopedConnection::operator=(const Connection& connection) noexcept
 {
-    disconnect();
-    Connection::operator=(connection);
-    return *this;
+    if (aliases(connection))
+        return *this;
+
+    return assignAfterDisconnect(connection);
 }
 
 ScopedConnection& ScopedConnection::operator=(Connection&& connection) noexcept
 {
+    if (aliases(connection))
+        return retainAndResetAliasingSource(connection);
+
+    return assignAfterDisconnect(std::move(connection));
+}
+
+ScopedConnection& ScopedConnection::assignAfterDisconnect(Connection connection)
+{
     disconnect();
     Connection::operator=(std::move(connection));
+    return *this;
+}
+
+ScopedConnection& ScopedConnection::retainAndResetAliasingSource(Connection& source)
+{
+    if (static_cast<Connection*>(this) != &source)
+        source = Connection{};
+
     return *this;
 }
 

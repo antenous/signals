@@ -32,6 +32,11 @@ public:
     ScopedConnection& operator=(Connection&& connection) noexcept;
 
     Connection release();
+
+private:
+    ScopedConnection& assignAfterDisconnect(Connection connection);
+
+    ScopedConnection& retainAndResetAliasingSource(Connection& source);
 };
 
 } // namespace signals

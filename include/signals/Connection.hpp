@@ -32,6 +32,9 @@ public:
 
     void disconnect();
 
+protected:
+    [[nodiscard]] bool aliases(const Connection& other) const;
+
 private:
     Disconnectable::weak_type slot;
 };

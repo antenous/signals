@@ -7,6 +7,22 @@ namespace
 {
 using namespace testing;
 
+class ForwardDeclared;
+using IncompleteByValueSlot = signals::Slot<void(ForwardDeclared)>;
+using IncompleteByValueResult = IncompleteByValueSlot::Result;
+
+class ForwardDeclared
+{
+};
+
+class CopyOnlyByValue
+{
+public:
+    CopyOnlyByValue() = default;
+    CopyOnlyByValue(const CopyOnlyByValue&) = default;
+    CopyOnlyByValue(CopyOnlyByValue&&) = delete;
+};
+
 class SlotTest : public Test
 {
 protected:
@@ -55,5 +71,16 @@ TEST_F(SlotTest, ReturnResultOfCallableWhenInvoked)
     };
     const auto slot = Slot{fn};
     EXPECT_EQ(result, std::invoke(slot));
+}
+
+TEST_F(SlotTest, AllowIncompleteByValueParameterTypeAtDeclaration)
+{
+    EXPECT_TRUE((std::is_same_v<void, IncompleteByValueResult>));
+    EXPECT_TRUE((std::is_same_v<void, IncompleteByValueSlot::Result>));
+}
+
+TEST_F(SlotTest, AllowCopyOnlyByValueParameterType)
+{
+    EXPECT_TRUE((std::is_same_v<void, signals::Slot<void(CopyOnlyByValue)>::Result>));
 }
 } // namespace

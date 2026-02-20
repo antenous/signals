@@ -98,21 +98,14 @@ TEST_F(ConnectionTest, DoNothingWhenResetSlotIsDisconnected)
     connection.disconnect();
 }
 
-TEST_F(ConnectionTest, DoNotDisconnectWhenCopied)
-{
-    const auto source = Connection{slot};
-
-    const auto target = source;
-
-    EXPECT_TRUE(source.connected());
-    EXPECT_TRUE(target.connected());
-    EXPECT_TRUE(slot->connected());
-}
-
 TEST_F(ConnectionTest, DisconnectAllWhenOneCopyIsDisconnected)
 {
     const auto source = Connection{slot};
     auto target = source;
+
+    EXPECT_TRUE(source.connected());
+    EXPECT_TRUE(target.connected());
+    EXPECT_TRUE(slot->connected());
 
     target.disconnect();
 

@@ -58,10 +58,10 @@ TEST_F(ScopedConnectionTest, IsImplicitlyConstructibleFromConnection)
 {
     auto connection = Connection{slot};
 
-    ScopedConnection copied = connection;
+    const ScopedConnection copied = connection;
     EXPECT_TRUE(copied.connected());
 
-    ScopedConnection moved = std::move(connection);
+    const ScopedConnection moved = std::move(connection);
     EXPECT_TRUE(moved.connected());
 }
 
@@ -232,6 +232,17 @@ TEST_F(ScopedConnectionTest, IsSelfMoveSafe)
     scopedConnection = std::move(*self);
 
     EXPECT_TRUE(scopedConnection.connected());
+}
+
+TEST_F(ScopedConnectionTest, IsBaseSelfMoveSafe)
+{
+    ScopedConnection scopedConnection = Connection{slot};
+    auto& base = static_cast<Connection&>(scopedConnection);
+
+    scopedConnection = std::move(base);
+
+    EXPECT_TRUE(scopedConnection.connected());
+    EXPECT_TRUE(slot->connected());
 }
 } // namespace
 } // namespace signals

@@ -28,7 +28,7 @@ public:
 
     Connection& operator=(Connection&& other) noexcept;
 
-    bool connected() const;
+    [[nodiscard]] bool connected() const;
 
     void disconnect();
 

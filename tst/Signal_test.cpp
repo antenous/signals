@@ -2,6 +2,7 @@
 
 #include <signals/Signal.hpp>
 #include <gmock/gmock.h>
+#include <cstdlib>
 #include <vector>
 
 namespace
@@ -273,20 +274,33 @@ TEST_F(SignalTest, IsSelfMoveSafe)
 
 struct MoveSentinel
 {
-    int value = 0;
-
     explicit MoveSentinel(int value) :
         value(value)
     {
     }
 
     MoveSentinel(const MoveSentinel&) = default;
+    MoveSentinel& operator=(const MoveSentinel&) = default;
 
     MoveSentinel(MoveSentinel&& other) noexcept :
         value(other.value)
     {
         other.value = -1;
     }
+
+    auto operator=(MoveSentinel&& other) noexcept -> MoveSentinel&
+    {
+        if (this == &other)
+            return *this;
+
+        value = other.value;
+        other.value = -1;
+        return *this;
+    }
+
+    ~MoveSentinel() = default;
+
+    int value = 0;
 };
 
 TEST_F(SignalTest, DeliverEquivalentValueToMultipleSlotsWhenSignalingRvalue)
@@ -344,7 +358,7 @@ struct NonDefaultResult
     {
     }
 
-    int value;
+    int value = 0;
 };
 
 TEST_F(SignalTest, SupportNonDefaultConstructibleSlotResultWithDefaultCombiner)
@@ -449,4 +463,14 @@ void* operator new(std::size_t count)
         *bytes += count;
 
     return std::malloc(count);
+}
+
+void operator delete(void* ptr) noexcept
+{
+    std::free(ptr);
+}
+
+void operator delete(void* ptr, std::size_t) noexcept
+{
+    std::free(ptr);
 }

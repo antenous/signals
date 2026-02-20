@@ -22,9 +22,10 @@ ScopedConnection::~ScopedConnection()
 
 ScopedConnection& ScopedConnection::operator=(ScopedConnection&& other) noexcept
 {
-    if (this != &other)
-        *this = other.release();
+    if (this == &other)
+        return *this;
 
+    *this = other.release();
     return *this;
 }
 
@@ -33,30 +34,32 @@ ScopedConnection& ScopedConnection::operator=(const Connection& connection) noex
     if (aliases(connection))
         return *this;
 
-    return assignAfterDisconnect(connection);
+    assignAfterDisconnect(connection);
+    return *this;
 }
 
 ScopedConnection& ScopedConnection::operator=(Connection&& connection) noexcept
 {
     if (aliases(connection))
-        return retainAndResetAliasingSource(connection);
+        retainAndResetAliasingSource(connection);
+    else
+        assignAfterDisconnect(std::move(connection));
 
-    return assignAfterDisconnect(std::move(connection));
+    return *this;
 }
 
-ScopedConnection& ScopedConnection::assignAfterDisconnect(Connection connection)
+void ScopedConnection::assignAfterDisconnect(Connection connection)
 {
     disconnect();
     Connection::operator=(std::move(connection));
-    return *this;
 }
 
-ScopedConnection& ScopedConnection::retainAndResetAliasingSource(Connection& source)
+void ScopedConnection::retainAndResetAliasingSource(Connection& source)
 {
-    if (static_cast<Connection*>(this) != &source)
-        source = Connection{};
+    if (static_cast<Connection*>(this) == &source)
+        return;
 
-    return *this;
+    source = Connection{};
 }
 
 Connection ScopedConnection::release()

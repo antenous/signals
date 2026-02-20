@@ -20,7 +20,10 @@ class CopyOnlyByValue
 public:
     CopyOnlyByValue() = default;
     CopyOnlyByValue(const CopyOnlyByValue&) = default;
+    CopyOnlyByValue& operator=(const CopyOnlyByValue&) = default;
     CopyOnlyByValue(CopyOnlyByValue&&) = delete;
+    CopyOnlyByValue& operator=(CopyOnlyByValue&&) = delete;
+    ~CopyOnlyByValue() = default;
 };
 
 class SlotTest : public Test

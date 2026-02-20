@@ -34,9 +34,9 @@ public:
     Connection release();
 
 private:
-    ScopedConnection& assignAfterDisconnect(Connection connection);
+    void assignAfterDisconnect(Connection connection);
 
-    ScopedConnection& retainAndResetAliasingSource(Connection& source);
+    void retainAndResetAliasingSource(Connection& source);
 };
 
 } // namespace signals

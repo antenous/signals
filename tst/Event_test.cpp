@@ -18,7 +18,7 @@ struct ReferenceEvent : signals::Event<ReferenceEvent, int&()>
 
 TEST(EventTest, InvokeSubscriberOnEvent)
 {
-    signals::ScopedConnection scopedSubscription = TestEvent::subscribe([](int answer) {
+    const signals::ScopedConnection scopedSubscription = TestEvent::subscribe([](int answer) {
         return (answer == 42);
     });
     auto event = TestEvent{};
@@ -30,7 +30,7 @@ TEST(EventTest, InvokeSubscriberOnEvent)
 TEST(EventTest, AllowMutatingUnderlyingValueThroughReturnedReference)
 {
     auto value = 1;
-    signals::ScopedConnection scopedSubscription = ReferenceEvent::subscribe([&value]() -> int& {
+    const signals::ScopedConnection scopedSubscription = ReferenceEvent::subscribe([&value]() -> int& {
         return value;
     });
     auto event = ReferenceEvent{};

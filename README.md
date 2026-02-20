@@ -31,7 +31,8 @@ Tools used to measure code coverage:
 * [gcovr](https://gcovr.com)
 
 Other tools used in this project:
-* [ClangFormat](https://clang.llvm.org/docs/ClangFormat.html) version 16
+* [ClangFormat](https://clang.llvm.org/docs/ClangFormat.html) (version 16)
+* [Clang-Tidy](https://clang.llvm.org/extra/clang-tidy/) (version 17)
 * [GoogleTest](https://github.com/google/googletest) (fetched at configure time)
 
 ## Usage
@@ -177,6 +178,28 @@ across threads.
 | `CODE_COVERAGE` | `OFF` | when tests are enabled | Enable coverage instrumentation and `check-coverage` target. |
 | `COLOR_DIAGNOSTICS` | `OFF` | GNU/Clang | Force compiler diagnostics color output. |
 | `CMAKE_INSTALL_PREFIX` | platform default (for example `/usr/local`) | install | Install location prefix for `install` target. |
+
+## Static analysis
+
+Run `clang-tidy` using the repository config (`.clang-tidy`).
+
+First configure a build directory with `compile_commands.json`:
+
+```sh
+$ cmake -S . -B build/tidy -G Ninja -DSIGNALS_TEST=On -DCMAKE_EXPORT_COMPILE_COMMANDS=On
+```
+
+Then run clang-tidy:
+
+```sh
+$ run-clang-tidy -p build/tidy '.*/(src|tst)/.*\.cpp$'
+```
+
+To apply suggested fixes automatically:
+
+```sh
+$ run-clang-tidy -fix -p build/tidy '.*/(src|tst)/.*\.cpp$'
+```
 
 ## Building
 

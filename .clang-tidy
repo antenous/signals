@@ -1,0 +1,47 @@
+# Default config: strict on correctness/safety, moderate on style churn.
+Checks: >
+  -*,
+  clang-analyzer-*,
+  bugprone-*,
+  performance-*,
+  portability-*,
+  cppcoreguidelines-*,
+  modernize-use-nullptr,
+  modernize-use-override,
+  modernize-use-using,
+  modernize-use-bool-literals,
+  modernize-use-emplace,
+  modernize-use-nodiscard,
+  modernize-use-noexcept,
+  modernize-loop-convert,
+  modernize-redundant-void-arg,
+  misc-*,
+  readability-implicit-bool-conversion,
+  readability-redundant-control-flow,
+  -altera-*,
+  -fuchsia-*,
+  -google-*,
+  -hicpp-*,
+  -llvmlibc-*,
+  -llvm-*,
+  -misc-include-cleaner,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -cppcoreguidelines-missing-std-forward,
+  -cppcoreguidelines-rvalue-reference-param-not-moved,
+  -cppcoreguidelines-avoid-non-const-global-variables,
+  -cppcoreguidelines-non-private-member-variables-in-classes,
+  -cppcoreguidelines-no-malloc,
+  -cppcoreguidelines-owning-memory,
+  -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
+  -cppcoreguidelines-pro-bounds-pointer-arithmetic,
+  -bugprone-use-after-move,
+  -clang-analyzer-cplusplus.Move,
+  -clang-analyzer-unix.Malloc,
+  -misc-non-private-member-variables-in-classes
+WarningsAsErrors: ''
+HeaderFilterRegex: '(^|.*/)(include|src|tst)/'
+FormatStyle: file
+SystemHeaders: false
+CheckOptions:
+  - key: cppcoreguidelines-special-member-functions.AllowSoleDefaultDtor
+    value: 'true'

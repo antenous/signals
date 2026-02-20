@@ -13,8 +13,8 @@ if(NOT DEFINED SIGNALS_STANDALONE_PROJECT)
     endif()
 endif()
 
-include(CMakeDependentOption)
-cmake_dependent_option(SIGNALS_TEST "Enable tests" ON "SIGNALS_STANDALONE_PROJECT" OFF)
+set(SIGNALS_TEST_DEFAULT ${SIGNALS_STANDALONE_PROJECT})
+option(SIGNALS_TEST "Enable tests" ${SIGNALS_TEST_DEFAULT})
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake)
 include(colordiagnostics)

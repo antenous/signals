@@ -16,6 +16,27 @@ struct ReferenceEvent : signals::Event<ReferenceEvent, int&()>
 {
 };
 
+template<typename R>
+struct Sum
+{
+    template<typename Slots, typename... Args>
+    auto operator()(Slots slots, Args&&... args) const
+    {
+        auto result = R{};
+
+        for (auto& slot : slots)
+            result += std::invoke(*slot, args...);
+
+        return result;
+    }
+};
+
+using SumSignal = signals::Signal<int(int), Sum<int>>;
+
+struct SumEvent : signals::Event<SumEvent, int(int), SumSignal>
+{
+};
+
 TEST(EventTest, InvokeSubscriberOnEvent)
 {
     const signals::ScopedConnection scopedSubscription = TestEvent::subscribe([](int answer) {
@@ -30,9 +51,10 @@ TEST(EventTest, InvokeSubscriberOnEvent)
 TEST(EventTest, AllowMutatingUnderlyingValueThroughReturnedReference)
 {
     auto value = 1;
-    const signals::ScopedConnection scopedSubscription = ReferenceEvent::subscribe([&value]() -> int& {
-        return value;
-    });
+    const signals::ScopedConnection scopedSubscription =
+        ReferenceEvent::subscribe([&value]() -> int& {
+            return value;
+        });
     auto event = ReferenceEvent{};
 
     decltype(auto) result = event();
@@ -40,5 +62,18 @@ TEST(EventTest, AllowMutatingUnderlyingValueThroughReturnedReference)
 
     EXPECT_EQ(7, result);
     EXPECT_EQ(7, value);
+}
+
+TEST(EventTest, SupportCustomResultCombiner)
+{
+    const signals::ScopedConnection first = SumEvent::subscribe([](int n) {
+        return n + 1;
+    });
+    const signals::ScopedConnection second = SumEvent::subscribe([](int n) {
+        return n + 2;
+    });
+    auto event = SumEvent{};
+
+    EXPECT_EQ(23, event(10));
 }
 } // namespace

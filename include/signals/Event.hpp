@@ -8,7 +8,7 @@
 namespace signals
 {
 
-template<typename T, typename Signature>
+template<typename T, typename Signature, typename SignalType = Signal<Signature>>
 class Event
 {
 public:
@@ -25,7 +25,7 @@ public:
     }
 
 private:
-    static inline Signal<Signature> signal;
+    static inline SignalType signal;
 };
 
 } // namespace signals

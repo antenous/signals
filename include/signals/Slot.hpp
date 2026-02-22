@@ -52,7 +52,10 @@ public:
 
     using Result = R;
 
-    explicit Slot(Callable callable);
+    explicit Slot(Callable callable) :
+        callable(std::move(callable))
+    {
+    }
 
     Slot(const Slot&) = delete;
 
@@ -65,40 +68,24 @@ public:
     auto operator=(Slot&&) -> Slot& = delete;
 
     auto operator()(Args... args) const -> R
-    requires((std::is_reference_v<Args> || std::is_copy_constructible_v<Args>) && ...);
+    requires((std::is_reference_v<Args> || std::is_copy_constructible_v<Args>) && ...)
+    {
+        return std::invoke(callable, args...);
+    }
 
-    [[nodiscard]] auto connected() const -> bool override;
+    [[nodiscard]] auto connected() const -> bool override
+    {
+        return callable != nullptr;
+    }
 
 private:
-    void disconnect() override;
+    void disconnect() override
+    {
+        callable = nullptr;
+    }
 
     Callable callable;
 };
-
-template<typename R, typename... Args>
-Slot<R(Args...)>::Slot(Callable callable) :
-    callable(std::move(callable))
-{
-}
-
-template<typename R, typename... Args>
-auto Slot<R(Args...)>::connected() const -> bool
-{
-    return callable != nullptr;
-}
-
-template<typename R, typename... Args>
-void Slot<R(Args...)>::disconnect()
-{
-    callable = nullptr;
-}
-
-template<typename R, typename... Args>
-auto Slot<R(Args...)>::operator()(Args... args) const -> R
-requires((std::is_reference_v<Args> || std::is_copy_constructible_v<Args>) && ...)
-{
-    return std::invoke(callable, args...);
-}
 
 } // namespace signals
 

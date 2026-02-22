@@ -13,28 +13,20 @@ class Event
 {
 public:
     template<typename Fn>
-    static auto subscribe(Fn&& fn);
+    static auto subscribe(Fn&& fn)
+    {
+        return signal.connect(std::forward<Fn>(fn));
+    }
 
     template<typename... Args>
-    auto operator()(Args&&... args) const -> decltype(auto);
+    auto operator()(Args&&... args) const -> decltype(auto)
+    {
+        return std::invoke(signal, std::forward<Args>(args)...);
+    }
 
 private:
     static inline Signal<Signature> signal;
 };
-
-template<typename T, typename Signature>
-template<typename Fn>
-inline auto Event<T, Signature>::subscribe(Fn&& fn)
-{
-    return signal.connect(std::forward<Fn>(fn));
-}
-
-template<typename T, typename Signature>
-template<typename... Args>
-inline auto Event<T, Signature>::operator()(Args&&... args) const -> decltype(auto)
-{
-    return std::invoke(signal, std::forward<Args>(args)...);
-}
 
 } // namespace signals
 

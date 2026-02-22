@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.15)
 project(signals
-    VERSION 2.0.11
+    VERSION 2.0.12
     DESCRIPTION "A simple signals and slots library"
     HOMEPAGE_URL "https://gitlab.com/antenous/signals"
     LANGUAGES CXX)

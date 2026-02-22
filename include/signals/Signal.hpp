@@ -8,19 +8,25 @@
 #include "Slot.hpp"
 #include <algorithm>
 #include <concepts>
+#include <functional>
+#include <memory>
 #include <ranges>
+#include <type_traits>
+#include <utility>
 #include <vector>
 
 namespace signals
 {
 
 template<
-    typename Signature, typename Combiner = DefaultCombiner<typename Slot<Signature>::Result>>
+    typename Signature,
+    typename CombinerType = DefaultCombiner<typename Slot<Signature>::Result>>
 class Signal
 {
-public:
+private:
     using Slot = signals::Slot<Signature>;
 
+public:
     Signal() = default;
 
     Signal(const Signal&) = delete;
@@ -50,24 +56,27 @@ public:
         return std::ranges::none_of(slots, std::mem_fn(&Slot::connected));
     }
 
-    [[nodiscard]] auto num_slots() const
+    [[nodiscard]] auto num_slots() const -> std::size_t
     {
         return std::ranges::count_if(slots, std::mem_fn(&Slot::connected));
     }
 
-    auto connect(typename Slot::Callable callable)
+    template<typename Fn>
+    requires std::constructible_from<typename Slot::Callable, std::remove_cvref_t<Fn>>
+    auto connect(Fn&& callable)
     {
         removeDisconnectedSlots();
-        return Connection{slots.emplace_back(std::make_shared<Slot>(std::move(callable)))};
+        return Connection{
+            slots.emplace_back(std::make_shared<Slot>(std::forward<Fn>(callable)))};
     }
 
     template<typename... Args>
-    requires std::invocable<signals::Slot<Signature>&, Args...>
+    requires std::invocable<Slot&, Args...>
     auto operator()(Args&&... args) const -> decltype(auto)
     {
-        const auto immutable = slots;
+        const auto snapshot = slots;
         return std::invoke(
-            Combiner{}, immutable | std::views::filter(std::mem_fn(&Slot::connected)),
+            CombinerType{}, snapshot | std::views::filter(std::mem_fn(&Slot::connected)),
             std::forward<Args>(args)...);
     }
 

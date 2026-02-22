@@ -16,16 +16,17 @@ class SignalTest : public Test
 protected:
     using Signal = signals::Signal<void()>;
     using SignalWithParams = signals::Signal<void(int&)>;
+    using Slot = signals::Slot<void()>;
 
     void SetUp() override
     {
         ::bytesAllocated = bytesAllocated = std::make_shared<std::size_t>(0);
     }
 
-    [[nodiscard]] auto measureSizeofSlot(typename Signal::Slot::Callable callable) const
+    [[nodiscard]] auto measureSizeofSlot(typename Slot::Callable callable) const
     {
         const auto bytesBefore = *bytesAllocated;
-        auto slot = std::make_shared<Signal::Slot>(std::move(callable));
+        auto slot = std::make_shared<Slot>(std::move(callable));
         return *bytesAllocated - bytesBefore;
     }
 

@@ -31,7 +31,7 @@ Tools used to measure code coverage:
 * [gcovr](https://gcovr.com)
 
 Other tools used in this project:
-* [ClangFormat](https://clang.llvm.org/docs/ClangFormat.html) (version 16)
+* [ClangFormat](https://clang.llvm.org/docs/ClangFormat.html) (version 17)
 * [Clang-Tidy](https://clang.llvm.org/extra/clang-tidy/) (version 17)
 * [GoogleTest](https://github.com/google/googletest) (fetched at configure time)
 

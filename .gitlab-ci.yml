@@ -1,44 +1,74 @@
-image: ubuntu:22.04
+default:
+  image: ubuntu:22.04
+  interruptible: true
 
 before_script:
-   - apt-get update -qq &&
-     DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends -qq
-     build-essential ca-certificates cmake gcovr git gnupg lcov ninja-build software-properties-common wget
-   - wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -
-   - add-apt-repository -y deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-16 main &&
-     apt-get update -qq &&
-     DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends -qq
-     clang-16
+  - apt-get update -qq &&
+    DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends -qq
+    build-essential ca-certificates cmake gcovr git gnupg lcov lsb-release
+    ninja-build software-properties-common wget
+  - wget -q https://apt.llvm.org/llvm.sh && chmod +x llvm.sh && ./llvm.sh 17
+  - DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends -qq
+    clang-format-17 clang-tidy-17
 
+stages:
+  - lint
+  - build
+  - test
+  - deploy
+
+# Enforce .clang-format and .clang-tidy. clang-tidy needs a compile database and
+# only sees the header-only templates in include/ through the unit tests, so
+# configure with tests enabled and lint both src/ and tst/.
+lint:
+  stage: lint
+  script:
+    - git ls-files '*.cpp' '*.hpp' | xargs -r clang-format-17 --dry-run --Werror
+    - cmake -S . -B build/ -G Ninja -DCMAKE_CXX_COMPILER=clang++-17 -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+    - git ls-files 'src/*.cpp' 'tst/*.cpp' | xargs -r clang-tidy-17 --quiet --warnings-as-errors='*' -p build/
+
+# Release smoke test under both supported compilers.
 build:
-   stage: build
-   script:
-   - cmake -S . -B build/ -G Ninja -DCMAKE_BUILD_TYPE=Release
-   - cmake --build build/
+  stage: build
+  parallel:
+    matrix:
+      - CXX: [g++, clang++-17]
+  script:
+    - cmake -S . -B build/ -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=$CXX
+    - cmake --build build/
 
+# Unit tests under both supported compilers.
 test:
-   stage: test
-   script:
-   - CXX=/usr/bin/clang++-16 cmake -S . -B build/ -G Ninja -DCMAKE_BUILD_TYPE=Debug
-   - cmake --build build/ --target test-signals
-   - ./build/tst/test-signals --gtest_output="xml:report.xml"
-   artifacts:
-      reports:
-         junit: report.xml
+  stage: test
+  parallel:
+    matrix:
+      - CXX: [g++, clang++-17]
+  script:
+    - cmake -S . -B build/ -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=$CXX
+    - cmake --build build/ --target test-signals
+    - ./build/tst/test-signals --gtest_output="xml:report.xml"
+  artifacts:
+    reports:
+      junit: report.xml
 
+# Code coverage. lcov/gcovr are gcov-based, so this runs under GCC.
 coverage:
-   stage: test
-   script:
-   - cmake -S . -B build/ -G Ninja -DCODE_COVERAGE=On
-   - cmake --build build/ --target check-coverage
-   coverage: '/^TOTAL.*\s+(\d+\%)$/'
+  stage: test
+  script:
+    - cmake -S . -B build/ -G Ninja -DCODE_COVERAGE=On -DCMAKE_CXX_COMPILER=g++
+    - cmake --build build/ --target check-coverage
+  coverage: '/^TOTAL.*\s+(\d+\%)$/'
 
+# Build distributable packages, only on the default branch and on tags.
 package:
-   stage: deploy
-   script:
-   - cmake -S . -B signals/ -G Ninja -DCMAKE_BUILD_TYPE=Release
-   - cmake --build signals/ --target package
-   - cmake --build signals/ --target package_source
-   artifacts:
-      paths:
+  stage: deploy
+  rules:
+    - if: $CI_COMMIT_TAG
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  script:
+    - cmake -S . -B signals/ -G Ninja -DCMAKE_BUILD_TYPE=Release
+    - cmake --build signals/ --target package
+    - cmake --build signals/ --target package_source
+  artifacts:
+    paths:
       - signals/signals-*-Linux.*

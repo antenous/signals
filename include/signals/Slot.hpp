@@ -45,7 +45,8 @@ public:
         (!std::is_rvalue_reference_v<Args> && ...),
         "signals::Slot does not support rvalue-reference parameters in signatures");
     static_assert(
-        ((std::is_reference_v<Args> || detail::is_copy_constructible_if_complete<Args>)&&...),
+        ((std::is_reference_v<Args> || detail::is_copy_constructible_if_complete<Args>) &&
+         ...),
         "signals::Slot requires by-value parameters to be copy constructible");
 
     using Callable = std::function<R(Args...)>;

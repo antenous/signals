@@ -1,15 +1,12 @@
 default:
-  image: ubuntu:22.04
+  image: ubuntu:24.04
   interruptible: true
 
 before_script:
   - apt-get update -qq &&
     DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends -qq
-    build-essential ca-certificates cmake gcovr git gnupg lcov lsb-release
-    ninja-build software-properties-common wget
-  - wget -q https://apt.llvm.org/llvm.sh && chmod +x llvm.sh && ./llvm.sh 17
-  - DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends -qq
-    clang-format-17 clang-tidy-17
+    build-essential ca-certificates clang clang-format clang-tidy cmake gcovr git
+    lcov libjson-xs-perl ninja-build
 
 stages:
   - lint
@@ -23,16 +20,16 @@ stages:
 lint:
   stage: lint
   script:
-    - git ls-files '*.cpp' '*.hpp' | xargs -r clang-format-17 --dry-run --Werror
-    - cmake -S . -B build/ -G Ninja -DCMAKE_CXX_COMPILER=clang++-17 -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
-    - git ls-files 'src/*.cpp' 'tst/*.cpp' | xargs -r clang-tidy-17 --quiet --warnings-as-errors='*' -p build/
+    - git ls-files '*.cpp' '*.hpp' | xargs -r clang-format --dry-run --Werror
+    - cmake -S . -B build/ -G Ninja -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+    - git ls-files 'src/*.cpp' 'tst/*.cpp' | xargs -r clang-tidy --quiet --warnings-as-errors='*' -p build/
 
 # Release smoke test under both supported compilers.
 build:
   stage: build
   parallel:
     matrix:
-      - CXX: [g++, clang++-17]
+      - CXX: [g++, clang++]
   script:
     - cmake -S . -B build/ -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=$CXX
     - cmake --build build/
@@ -42,7 +39,7 @@ test:
   stage: test
   parallel:
     matrix:
-      - CXX: [g++, clang++-17]
+      - CXX: [g++, clang++]
   script:
     - cmake -S . -B build/ -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=$CXX
     - cmake --build build/ --target test-signals

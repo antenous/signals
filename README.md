@@ -19,20 +19,20 @@ It provides:
 ## Getting started
 
 The following tools are needed to configure and build the project:
-* [CMake](https://cmake.org/) (version 3.15 or later)
-* [gcc](https://gcc.gnu.org/) (version 11 or later) or
-  [Clang](https://clang.llvm.org/) (version 16 or later)
+* [CMake](https://cmake.org/) (version 3.28 or later)
+* [gcc](https://gcc.gnu.org/) (version 13 or later) or
+  [Clang](https://clang.llvm.org/) (version 18 or later)
 * [git](https://git-scm.com/)
 * [Make](https://www.gnu.org/software/make/) or
   [Ninja](https://ninja-build.org/)
 
 Tools used to measure code coverage:
-* [lcov](http://ltp.sourceforge.net/coverage/lcov.php)
-* [gcovr](https://gcovr.com)
+* [lcov](http://ltp.sourceforge.net/coverage/lcov.php) (version 2.0 or later)
+* [gcovr](https://gcovr.com) (version 7.0 or later)
 
 Other tools used in this project:
-* [ClangFormat](https://clang.llvm.org/docs/ClangFormat.html) (version 17)
-* [Clang-Tidy](https://clang.llvm.org/extra/clang-tidy/) (version 17)
+* [ClangFormat](https://clang.llvm.org/docs/ClangFormat.html) (version 18)
+* [Clang-Tidy](https://clang.llvm.org/extra/clang-tidy/) (version 18)
 * [GoogleTest](https://github.com/google/googletest) (fetched at configure time)
 
 ## Usage
@@ -176,7 +176,7 @@ across threads.
 | `BUILD_SHARED_LIBS` | `OFF` | always | Build shared library instead of static. |
 | `SIGNALS_TEST` | `ON` (standalone), `OFF` (subproject) | configure | Enable unit tests and `check` target. |
 | `CODE_COVERAGE` | `OFF` | when tests are enabled | Enable coverage instrumentation and `check-coverage` target. |
-| `COLOR_DIAGNOSTICS` | `OFF` | GNU/Clang | Force compiler diagnostics color output. |
+| `CMAKE_COLOR_DIAGNOSTICS` | unset | GNU/Clang | Force compiler diagnostics color output. |
 | `CMAKE_INSTALL_PREFIX` | platform default (for example `/usr/local`) | install | Install location prefix for `install` target. |
 
 ## Static analysis
@@ -223,10 +223,10 @@ $ cmake -S . -B build/ -DBUILD_SHARED_LIBS=On
 
 Both `GNU` and `Clang` support colored diagnostics but depending on the build
 environment the colored output may not be enabled by default. To force colored
-diagnostics configure the project with `COLOR_DIAGNOSTICS=On`.
+diagnostics configure the project with `CMAKE_COLOR_DIAGNOSTICS=ON`.
 
 ```sh
-$ cmake -S . -B build/ -DCOLOR_DIAGNOSTICS=On
+$ cmake -S . -B build/ -DCMAKE_COLOR_DIAGNOSTICS=ON
 ```
 
 ### Building with MSVC and Ninja on Windows

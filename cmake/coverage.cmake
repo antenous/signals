@@ -6,7 +6,10 @@
 #
 # In toplevel CMakeLists.txt add `check_coverage()` after all other targets have been defined:
 #
-#   check_coverage(<coverage target> [EXCLUDES <excludes> ...])
+#   check_coverage(<coverage target> [EXCLUDES <excludes> ...] [TESTS <tests> ...])
+#
+# EXCLUDES are left out of the report. TESTS match the test sources, which are
+# captured on their own (see the notes below).
 #
 # Example:
 #
@@ -17,7 +20,7 @@
 #   add_test(NAME ${PROJECT_NAME}_test COMMAND testrunner)
 #   add_coverage(testrunner)
 #
-#   check_coverage(check-coverage EXCLUDES '*googletest*')
+#   check_coverage(check-coverage EXCLUDES '*googletest*' TESTS '*/tst/*')
 #
 # To create a code coverage report run the below commands:
 #
@@ -28,6 +31,15 @@
 #       back to a phase that had the missing file, run `clean` target to remove
 #       the coverage files and return back to build the coverage.
 # NOTE! Enabling code coverage enforces the build type to be "Debug"
+# NOTE! gcov reports inconsistent end lines for the functions that GoogleTest's
+#       TEST macros define, which lcov 2.0 treats as an error
+#       (https://github.com/linux-test-project/lcov/issues/192). The sources
+#       matching TESTS are captured on their own with that error ignored, so
+#       the check stays in force for the code under test.
+# NOTE! Closing braces that hold only compiler-generated exception cleanup, such
+#       as that of a returned local, are left out of the report. This also hides
+#       an untested normal exit that has no line of its own, such as a guard that
+#       is only ever tested throwing.
 
 cmake_minimum_required(VERSION 3.15)
 include_guard(GLOBAL)
@@ -96,40 +108,61 @@ function(check_coverage target)
 
         set(options)
         set(oneValueArgs)
-        set(multiValueArgs EXCLUDES)
+        set(multiValueArgs EXCLUDES TESTS)
         cmake_parse_arguments(Coverage "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
         set(report ${PROJECT_NAME}-coverage)
-        set(excludes '/usr/include/*' ${Coverage_EXCLUDES})
+        set(tracefiles ${report}.base ${report}.info)
+
+        # Leave system and third-party sources, and the tests captured on their
+        # own, out already when capturing, so lcov neither processes nor warns
+        # about them
+        set(excludes '/usr/include/*' ${Coverage_EXCLUDES} ${Coverage_TESTS})
+        list(TRANSFORM excludes PREPEND "--exclude;")
+
+        # Capture the tests on their own, ignoring the mismatched end lines of
+        # GoogleTest's TEST macros (see the notes above)
+        if(Coverage_TESTS)
+            set(includes ${Coverage_TESTS})
+            list(TRANSFORM includes PREPEND "--include;")
+
+            set(capture_tests_baseline
+                COMMAND ${LCOV} ${includes} --ignore-errors mismatch,mismatch --capture --initial --directory . --output-file ${report}.tests.base --quiet --quiet)
+            set(capture_tests
+                COMMAND ${LCOV} ${includes} --ignore-errors mismatch,mismatch --capture --directory . --output-file ${report}.tests.info --quiet --quiet)
+
+            list(APPEND tracefiles ${report}.tests.base ${report}.tests.info)
+        endif()
+
+        set(add_tracefiles ${tracefiles})
+        list(TRANSFORM add_tracefiles PREPEND "--add-tracefile;")
 
         add_custom_target(${target}
             COMMENT "Creating code coverage report"
 
             # Cleanup and run baseline lcov
             COMMAND ${LCOV} --zerocounters --directory . --quiet
-            COMMAND ${LCOV} --capture --initial --directory . --output-file ${report}.base --quiet
+            COMMAND ${LCOV} ${excludes} --capture --initial --directory . --output-file ${report}.base --quiet --quiet
+            ${capture_tests_baseline}
 
             # Run the tests
             COMMAND ${CMAKE_CTEST_COMMAND}
 
             # Run lcov again after tests
-            COMMAND ${LCOV} --capture --directory . --output-file ${report}.info --quiet
+            COMMAND ${LCOV} ${excludes} --capture --directory . --output-file ${report}.info --quiet --quiet
+            ${capture_tests}
 
-            # Combine lcov tracefiles
-            COMMAND ${LCOV} --add-tracefile ${report}.base --add-tracefile ${report}.info --output-file ${report}.total --quiet
-
-            # Remove unwanted stuff from tracefile
-            COMMAND ${LCOV} --remove ${report}.total ${excludes} --output-file ${report}.info.cleaned --quiet
+            # Combine lcov tracefiles. The brace filter needs the hit counts, so
+            # it runs only here (see the notes above).
+            COMMAND ${LCOV} --filter brace ${add_tracefiles} --output-file ${report}.total --quiet --quiet
 
             # Generate HTML reports.
-            COMMAND ${GENHTML} --demangle-cpp --title ${PROJECT_NAME} --output-directory=${report} ${report}.info.cleaned --quiet
+            COMMAND ${GENHTML} --demangle-cpp --title ${PROJECT_NAME} --output-directory=${report} ${report}.total --quiet
 
             BYPRODUCTS
                 ${report}
-                ${report}.base
-                ${report}.info
+                ${tracefiles}
                 ${report}.total
-                ${report}.info.cleaned
         )
 
         add_dependencies(${target} ${Coverage_DEPENDENCIES})
@@ -139,8 +172,10 @@ function(check_coverage target)
             list(TRANSFORM gcovr_excludes REPLACE "\\*" ".*")
             list(TRANSFORM gcovr_excludes PREPEND "--exclude;")
 
+            # Leave out uncovered lines that seem to hold no code, like the brace
+            # filter above
             add_custom_command(TARGET ${target} POST_BUILD
-                COMMAND ${GCOVR} -r ${PROJECT_SOURCE_DIR} ${gcovr_excludes})
+                COMMAND ${GCOVR} -r ${PROJECT_SOURCE_DIR} --exclude-noncode-lines ${gcovr_excludes})
         endif()
 
         add_custom_command(TARGET ${target} POST_BUILD

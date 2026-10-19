@@ -1,6 +1,6 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.28)
 project(signals
-    VERSION 2.1.2
+    VERSION 2.2.0
     DESCRIPTION "A simple signals and slots library"
     HOMEPAGE_URL "https://gitlab.com/antenous/signals"
     LANGUAGES CXX)
@@ -16,8 +16,11 @@ endif()
 set(SIGNALS_TEST_DEFAULT ${SIGNALS_STANDALONE_PROJECT})
 option(SIGNALS_TEST "Enable tests" ${SIGNALS_TEST_DEFAULT})
 
+# The library does not use C++ modules. Disable dependency scanning so
+# Clang builds do not require clang-scan-deps.
+set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
+
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake)
-include(colordiagnostics)
 include(install)
 
 add_library(signals
@@ -49,6 +52,6 @@ if(SIGNALS_TEST)
     add_subdirectory(tst EXCLUDE_FROM_ALL)
 
     if(SIGNALS_STANDALONE_PROJECT)
-        check_coverage(check-coverage EXCLUDES '*googletest*')
+        check_coverage(check-coverage EXCLUDES '*googletest*' TESTS '*/tst/*')
     endif()
 endif()

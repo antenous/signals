@@ -1,10 +1,27 @@
+# Agent files
+AGENTS.md
+CLAUDE.md
+/.agents/
+/.claude/
+/.codex/
+
 # Eclipse project files
 /.cproject
 /.project
 /.settings/
 
-# Configuration and build files
-/build/
+# VSCode project files
+/.vscode
 
-# AI tools
-/AGENTS.md
+# Configuration and build files
+/_build/
+/build/
+/.cache/
+/.clangd
+
+# CI recipe run locally
+/report.xml
+/signals/
+
+# Other
+*.orig
